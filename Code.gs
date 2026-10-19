@@ -117,6 +117,12 @@ function doPost(e) {
       case 'adminDeleteRegistration':
         result = adminDeleteRegistration(input.pw, input.id);
         break;
+      case 'adminBatchDelete':
+        result = adminBatchDelete(input.pw, input.ids);
+        break;
+      case 'adminDeleteAll':
+        result = adminDeleteAll(input.pw);
+        break;
       case 'getEventInfo':
         result = getEventInfo();
         break;
@@ -350,6 +356,47 @@ function adminDeleteRegistration(pw, id) {
     const row = idx + 2;
     sh.deleteRow(row);
     return { ok: true, id: id };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** 批次刪除多筆報名 */
+function adminBatchDelete(pw, ids) {
+  checkAdmin_(pw);
+  if (!Array.isArray(ids) || !ids.length) throw new Error('請提供要刪除的編號');
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    const sh = ensureSheet_();
+    const last = sh.getLastRow();
+    if (last < 2) throw new Error('找不到報名資料');
+    const allIds = sh.getRange(2, 1, last - 1, 1).getDisplayValues().flat();
+    // 找出要刪除的列號（從大到小排，避免刪除後行號偏移）
+    var rowsToDelete = [];
+    ids.forEach(function(id) {
+      var idx = allIds.indexOf(String(id));
+      if (idx !== -1) rowsToDelete.push(idx + 2);
+    });
+    rowsToDelete.sort(function(a, b) { return b - a; });
+    rowsToDelete.forEach(function(row) { sh.deleteRow(row); });
+    return { ok: true, deleted: rowsToDelete.length };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** 清空全部報名資料 */
+function adminDeleteAll(pw) {
+  checkAdmin_(pw);
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    const sh = ensureSheet_();
+    const last = sh.getLastRow();
+    if (last < 2) return { ok: true, deleted: 0 };
+    sh.deleteRows(2, last - 1);
+    return { ok: true, deleted: last - 1 };
   } finally {
     lock.releaseLock();
   }

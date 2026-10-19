@@ -145,7 +145,13 @@ button,input{font:inherit}
         <div class="chips" id="chips"></div>
       </div>
       <p class="count" id="count"></p>
-      <div style="margin-bottom:12px"><button class="btn" id="exportBtn">⬇️ 匯出 Excel (CSV)</button></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+        <button class="btn" id="exportBtn">⬇️ 匯出 CSV</button>
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:13.5px;color:var(--muted)"><input type="checkbox" id="selectAll" style="width:16px;height:16px;accent-color:var(--orange)"> 全選</label>
+        <button class="btn hidden" id="batchDelBtn" style="color:var(--red);border-color:var(--red)">🗑️ 刪除已勾選 (<span id="selCount">0</span>)</button>
+        <div style="flex:1"></div>
+        <button class="btn" id="deleteAllBtn" style="color:var(--red);border-color:var(--red);font-size:13px">⚠️ 清空全部報名</button>
+      </div>
       <div class="list" id="list"></div>
     </div>
 
@@ -174,7 +180,7 @@ button,input{font:inherit}
           <div><label class="field-label">👨‍👩‍👧 活動對象</label>
             <input type="text" id="evAudience" class="search" placeholder="例：親子家庭、寵物家庭及一般民眾"></div>
           <div><label class="field-label">📌 報到與參加須知（每行一條）</label>
-            <textarea id="evRules" class="search" style="min-height:480px;resize:vertical;line-height:1.9;font-size:15px" placeholder="每行輸入一條須知&#10;例如：&#10;請於 17:40－18:00 至什浬鍋停車場完成報到&#10;兒童須由家長全程陪同，不可自行離隊"></textarea></div>
+            <textarea id="evRules" class="search" style="min-height:480px;width:100%;resize:vertical;line-height:1.9;font-size:15px" placeholder="每行輸入一條須知&#10;例如：&#10;請於 17:40－18:00 至什浬鍋停車場完成報到&#10;兒童須由家長全程陪同，不可自行離隊"></textarea></div>
           <div style="display:flex;gap:8px;align-items:center">
             <button class="btn primary" id="saveEventBtn" style="flex:none">💾 儲存活動資訊</button>
             <span style="color:var(--muted);font-size:13px" id="eventStatus">載入中…</span>
@@ -220,13 +226,14 @@ button,input{font:inherit}
   // ====================================================
   // ★★★ 部署後請把下面的網址換成你的 Apps Script 部署網址 ★★★
   // ====================================================
-  const API_URL = 'https://script.google.com/macros/s/AKfycbz1R4YKKRxKy6Y-MBz53OjHfOGaa7qb-pkpLoCL33q2Fy0G2UuUplTaIWUvNDbrOqam/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbxCIPezJiX2DlOeUAbL7PyHUpDcOk20_Y9Mw9xrFkwc8F6WhkrgyrUf5qqY750BSzw6/exec';
   // ====================================================
 
   const IS_PREVIEW = !API_URL;
   const $ = s => document.querySelector(s);
   const $$ = s => document.querySelectorAll(s);
   let PW = '', ROWS = [], FIELDS = [], FILTER = 'all', timer = null;
+  const selectedSet = new Set();
 
   const store = {
     get(k){ try { return sessionStorage.getItem(k) || ''; } catch(e){ return ''; } },
@@ -378,7 +385,7 @@ button,input{font:inherit}
       const det = FIELDS.filter(([k]) => r[k] && !['id','name'].includes(k))
         .map(([k, label]) => '<dt>' + esc(label) + '</dt><dd>' + (k === 'phone' ? '<a href="tel:' + esc(String(r[k]).replace(/[^\d+]/g,'')) + '">' + esc(r[k]) + '</a>' : esc(r[k])) + '</dd>').join('');
       return '<div class="item' + (isIn(r) ? ' in' : '') + (openSet.has(r.id) ? ' open' : '') + '" data-id="' + esc(r.id) + '">' +
-        '<div class="row"><div class="id">' + esc(r.id) + '</div>' +
+        '<div class="row"><input type="checkbox" class="sel-cb" data-sel="' + esc(r.id) + '"' + (selectedSet.has(r.id) ? ' checked' : '') + ' style="width:18px;height:18px;accent-color:var(--orange);flex:none;cursor:pointer"><div class="id">' + esc(r.id) + '</div>' +
         '<div class="main"><div class="n">' + esc(r.name) + '</div><div class="p">' + esc(r.phone) + (isIn(r) ? '・' + esc(r.checkinTime) + ' 報到' : '') + '</div><div class="badges">' + badges.join('') + '</div></div>' +
         '<button class="ck' + (isIn(r) ? ' on' : '') + '" data-ck>' + (isIn(r) ? '✔ 已報到' : '報到') + '</button></div>' +
         '<div class="detail"><dl>' + det + '</dl><div style="margin-top:12px;text-align:right"><button class="btn" style="color:var(--red);border-color:var(--red);font-size:13px;padding:6px 14px" data-delete="' + esc(r.id) + '">🗑️ 刪除此報名</button></div></div></div>';
@@ -419,6 +426,58 @@ button,input{font:inherit}
     }
     if (e.target.closest('a')) return;
     if (e.target.closest('.row')) { openSet.has(id) ? openSet.delete(id) : openSet.add(id); item.classList.toggle('open'); }
+  });
+
+  // ---------- 勾選 / 批次刪除 / 全部刪除 ----------
+  function updateSelUI() {
+    const n = selectedSet.size;
+    const btn = $('#batchDelBtn');
+    if (n > 0) { btn.classList.remove('hidden'); $('#selCount').textContent = n; }
+    else { btn.classList.add('hidden'); }
+    $('#selectAll').checked = ROWS.length > 0 && selectedSet.size === ROWS.length;
+  }
+
+  $('#list').addEventListener('change', e => {
+    const cb = e.target.closest('.sel-cb');
+    if (!cb) return;
+    const id = cb.dataset.sel;
+    cb.checked ? selectedSet.add(id) : selectedSet.delete(id);
+    updateSelUI();
+  });
+
+  $('#selectAll').addEventListener('change', e => {
+    if (e.target.checked) { ROWS.forEach(r => selectedSet.add(r.id)); }
+    else { selectedSet.clear(); }
+    renderList(); updateSelUI();
+  });
+
+  $('#batchDelBtn').addEventListener('click', async () => {
+    const ids = Array.from(selectedSet);
+    if (!ids.length) return;
+    if (!confirm('⚠️ 確定要刪除已勾選的 ' + ids.length + ' 筆報名？\n\n此操作無法復原！')) return;
+    $('#batchDelBtn').disabled = true;
+    try {
+      await api('adminBatchDelete', { pw: PW, ids });
+      ROWS = ROWS.filter(r => !selectedSet.has(r.id));
+      selectedSet.clear();
+      renderStats(); renderChips(); renderList(); updateSelUI();
+      toast('🗑️ 已刪除 ' + ids.length + ' 筆報名');
+    } catch (err) { toast('批次刪除失敗：' + (err.message || err)); }
+    $('#batchDelBtn').disabled = false;
+  });
+
+  $('#deleteAllBtn').addEventListener('click', async () => {
+    if (!ROWS.length) return toast('目前沒有資料');
+    if (!confirm('⚠️⚠️⚠️ 確定要清空全部 ' + ROWS.length + ' 筆報名資料？\n\n此操作無法復原！！！')) return;
+    if (!confirm('再次確認：真的要刪除所有報名嗎？')) return;
+    $('#deleteAllBtn').disabled = true;
+    try {
+      const res = await api('adminDeleteAll', { pw: PW });
+      ROWS = []; selectedSet.clear();
+      renderStats(); renderChips(); renderList(); updateSelUI();
+      toast('🗑️ 已清空全部報名（' + (res.deleted || 0) + ' 筆）');
+    } catch (err) { toast('清空失敗：' + (err.message || err)); }
+    $('#deleteAllBtn').disabled = false;
   });
 
   // ---------- 匯出 CSV（含 BOM，Excel 開啟不亂碼） ----------
