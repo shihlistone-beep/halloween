@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>什浬鍋萬聖節親子遊街｜報名表</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#170e24; --bg2:#22143a; --card:#24173a; --card2:#2e1f48; --line:#3f2d5e;
+  --text:#f7efe3; --muted:#bfaed6; --orange:#ff8a1f; --orange2:#ffb347; --green:#7ee0a1;
+  --red:#ff6b6b; --radius:18px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+  color:var(--text);background:var(--bg);line-height:1.65;font-size:16px;
+  background-image:radial-gradient(circle at 85% -10%,#ff8a1f33 0,transparent 40%),
+                   radial-gradient(circle at 0% 30%,#6b3fa033 0,transparent 45%);
+  background-attachment:fixed;min-height:100vh}
+.wrap{max-width:680px;margin:0 auto;padding:16px 16px 120px}
+
+/* Hero */
+.hero{position:relative;text-align:center;padding:36px 8px 20px;overflow:hidden}
+.moon{width:92px;height:92px;border-radius:50%;margin:0 auto 10px;
+  background:radial-gradient(circle at 35% 35%,#fff4d6,#ffcf7a 60%,#ff9e3d);
+  box-shadow:0 0 60px #ffb34788;display:grid;place-items:center;font-size:48px}
+.float{position:absolute;font-size:26px;opacity:.75;animation:fly 6s ease-in-out infinite}
+.f1{left:6%;top:24px}.f2{right:8%;top:60px;animation-delay:-2s}.f3{left:16%;top:120px;animation-delay:-4s;font-size:20px}
+@keyframes fly{50%{transform:translateY(-10px) rotate(-6deg)}}
+@media (prefers-reduced-motion:reduce){.float{animation:none}}
+.hero .tag{display:inline-block;font-size:13px;letter-spacing:.15em;color:var(--orange2);border:1px solid #ff8a1f66;
+  padding:2px 12px;border-radius:99px;margin-bottom:8px}
+h1{font-size:clamp(24px,6.4vw,34px);font-weight:900;margin:4px 0 6px;line-height:1.3}
+h1 span{color:var(--orange)}
+.sub{color:var(--orange2);font-weight:700;margin:0 0 12px}
+.intro{color:var(--muted);font-size:15px;margin:0 auto;max-width:520px}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px 18px;margin:16px 0}
+.info{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;font-size:15px}
+.info dt{color:var(--orange2);font-weight:700;white-space:nowrap}
+.info dd{margin:0}
+.info small{color:var(--muted)}
+details.notice summary{cursor:pointer;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center}
+details.notice summary::-webkit-details-marker{display:none}
+details.notice summary::after{content:"＋";color:var(--orange)}
+details.notice[open] summary::after{content:"－"}
+details.notice ol{margin:12px 0 0;padding-left:22px;color:var(--muted);font-size:14.5px}
+details.notice li{margin:6px 0}
+
+.sec-head{display:flex;align-items:center;gap:12px;margin:28px 4px 4px}
+.sec-head .num{flex:none;width:36px;height:36px;border-radius:12px;background:var(--orange);color:#1a0f00;font-weight:900;display:grid;place-items:center}
+.sec-head h2{font-size:19px;margin:0}
+.sec-head p{margin:0;color:var(--muted);font-size:13.5px}
+.section[hidden]{display:none}
+.section.reveal{animation:reveal .35s ease}
+@keyframes reveal{from{opacity:0;transform:translateY(8px)}}
+
+/* Fields */
+.field{margin:0 0 22px}
+.field:last-child{margin-bottom:0}
+.label{display:block;font-weight:700;margin-bottom:4px}
+.req{color:var(--orange);margin-left:4px;font-size:13px}
+.opt{color:var(--muted);margin-left:4px;font-size:13px;font-weight:400}
+.hint{color:var(--muted);font-size:13.5px;margin:0 0 8px}
+input[type=text],input[type=tel],input[type=email],input[type=number],textarea{
+  width:100%;font:inherit;color:var(--text);background:var(--bg2);border:1.5px solid var(--line);
+  border-radius:12px;padding:12px 14px;outline:none;transition:border-color .15s,box-shadow .15s}
+textarea{min-height:96px;resize:vertical}
+input:focus,textarea:focus{border-color:var(--orange);box-shadow:0 0 0 3px #ff8a1f33}
+input::placeholder,textarea::placeholder{color:#8a7aa3}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.choices{display:grid;gap:8px}
+.choices.cols2{grid-template-columns:1fr 1fr}
+.choice{position:relative;display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:12px;
+  background:var(--bg2);border:1.5px solid var(--line);cursor:pointer;transition:all .15s;min-height:48px;-webkit-tap-highlight-color:transparent}
+.choice:hover{border-color:#6a5390}
+.choice input{position:absolute;opacity:0;pointer-events:none}
+.choice .box{flex:none;width:22px;height:22px;margin-top:1px;border:2px solid #7d6a9b;border-radius:7px;display:grid;place-items:center;transition:all .15s}
+.choice input[type=radio]+.box{border-radius:50%}
+.choice .box::after{content:"";width:10px;height:10px;border-radius:3px;background:var(--orange);transform:scale(0);transition:transform .15s}
+.choice input[type=radio]+.box::after{border-radius:50%}
+.choice input:checked+.box{border-color:var(--orange)}
+.choice input:checked+.box::after{transform:scale(1)}
+.choice:has(input:checked){border-color:var(--orange);background:#3a2340}
+.choice input:focus-visible+.box{box-shadow:0 0 0 3px #ff8a1f66}
+.choice .txt{font-size:15px}
+
+.field.error input[type=text],.field.error input[type=tel],.field.error input[type=email],.field.error input[type=number],.field.error .choice{border-color:var(--red)}
+.err{display:none;color:var(--red);font-size:13.5px;margin-top:6px}
+.field.error .err{display:block}
+.warn{background:#ffb34718;border:1px solid #ffb34755;color:var(--orange2);border-radius:10px;padding:8px 12px;font-size:13.5px;margin-top:8px}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+
+/* Submit bar */
+.submitbar{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+  background:linear-gradient(to top,var(--bg) 70%,transparent)}
+.submitbar .in{max-width:680px;margin:0 auto}
+.btn{appearance:none;border:0;width:100%;font:inherit;font-weight:900;font-size:17px;padding:15px;border-radius:14px;cursor:pointer;
+  background:linear-gradient(135deg,var(--orange),#ff6a00);color:#1a0f00;box-shadow:0 8px 24px #ff8a1f55;transition:transform .1s,opacity .2s}
+.btn:active{transform:scale(.98)}
+.btn[disabled]{opacity:.6;cursor:wait}
+.errbox{background:#ff6b6b1a;border:1px solid #ff6b6b66;border-radius:14px;padding:12px 16px;color:#ffd0d0;font-size:14.5px;margin-top:16px}
+.errbox ul{margin:6px 0 0;padding-left:20px}
+
+/* Done screen */
+.done{text-align:center;padding:40px 8px}
+.done .big{font-size:72px;line-height:1}
+.done h2{font-size:26px;margin:12px 0 4px}
+.ticket{margin:20px auto;max-width:340px;background:var(--card2);border:2px dashed var(--orange);border-radius:18px;padding:18px}
+.ticket .id{font-size:40px;font-weight:900;color:var(--orange);letter-spacing:.06em}
+.ticket small{color:var(--muted)}
+.done .card{text-align:left}
+.closed{text-align:center}
+footer{text-align:center;color:#8a7aa3;font-size:12.5px;margin-top:32px}
+.preview-tag{position:fixed;top:8px;right:8px;background:#ffb347;color:#1a0f00;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;z-index:10}
+/* Gallery sections */
+.gallery-sec{margin:20px 0}
+.gallery-sec h2{font-size:20px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.gallery-grid{display:grid;gap:10px}
+.gallery-grid.single{grid-template-columns:1fr}
+.gallery-grid.multi{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.gallery-grid img{width:100%;border-radius:14px;border:1px solid var(--line);cursor:pointer;transition:transform .15s;object-fit:cover;aspect-ratio:auto}
+.gallery-grid.multi img{aspect-ratio:1}
+.gallery-grid img:hover{transform:scale(1.02)}
+.gallery-empty{color:var(--muted);font-size:14px;padding:16px 0}
+/* Lightbox */
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:100;place-items:center;padding:16px}
+.lightbox.on{display:grid}
+.lightbox img{max-width:100%;max-height:90vh;border-radius:12px;object-fit:contain}
+.lightbox .close{position:absolute;top:12px;right:16px;font-size:32px;color:#fff;cursor:pointer;background:none;border:0;line-height:1}
+@media (max-width:380px){.choices.cols2{grid-template-columns:1fr}.row2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+
+  <header class="hero">
+    <span class="float f1" aria-hidden="true">🦇</span>
+    <span class="float f2" aria-hidden="true">👻</span>
+    <span class="float f3" aria-hidden="true">🦇</span>
+    <div class="moon" aria-hidden="true">🎃</div>
+    <div class="tag">HALLOWEEN 2026</div>
+    <h1><span>什浬鍋</span>萬聖節<br>親子遊街活動</h1>
+    <p class="sub">👻 大手牽小手，毛孩一起來搗蛋！</p>
+    <p class="intro">換上可愛、搞怪的萬聖節裝扮，走訪麥寮在地商家，和大小朋友、毛孩們一起讓麥寮街道充滿歡笑與回憶！🧡</p>
+  </header>
+
+  <section class="card">
+    <dl class="info">
+      <dt>📅 日期</dt><dd>115年10月30日（星期五）</dd>
+      <dt>📍 集合</dt><dd>什浬鍋停車場<br><small>雲林縣麥寮鄉中山路409號</small></dd>
+      <dt>⏰ 報到</dt><dd>17:40－18:00</dd>
+      <dt>🚶 出發</dt><dd>18:10 準時出發</dd>
+      <dt>👨‍👩‍👧 對象</dt><dd>親子家庭、寵物家庭及一般民眾</dd>
+    </dl>
+  </section>
+
+  <details class="card notice">
+    <summary>📌 報到與參加須知</summary>
+    <ol>
+      <li>請於 17:40－18:00 至什浬鍋停車場完成報到，隊伍預計於 18:10 準時出發。</li>
+      <li>若因故晚到，請直接至什浬鍋店內櫃檯報到，由工作人員協助確認後續參與方式，請勿自行追趕遊街隊伍。</li>
+      <li>兒童須由家長或法定監護人全程陪同，不可自行離隊。</li>
+      <li>歡迎毛孩一起參加！請飼主依毛孩的個性準備合適的牽繩或推車。</li>
+      <li>活動期間請飼主全程照顧毛孩，留意毛孩情緒及周遭人車安全，並自行清理排泄物。</li>
+      <li>請所有參加者配合工作人員及交通引導人員的指示，共同維護活動安全。</li>
+      <li>如遇天候或其他不可抗力因素，活動安排若有異動，將另行通知。</li>
+    </ol>
+  </details>
+
+  <!-- 遊街路線 -->
+  <div class="gallery-sec" id="routeSec" hidden>
+    <h2>🗺️ 遊街路線圖</h2>
+    <div class="gallery-grid single" id="routeGrid"></div>
+  </div>
+
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox"><button class="close">&times;</button><img src="" alt=""></div>
+
+  <div id="closedBox" class="card closed" hidden></div>
+
+  <form id="form" novalidate autocomplete="on">
+    <div class="hp" aria-hidden="true"><label>網站<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+
+    <!-- 第一部分 -->
+    <div class="section" id="sec1">
+      <div class="sec-head"><div class="num">1</div><div><h2>基本報名資料</h2></div></div>
+      <div class="card">
+        <div class="field" data-req="text" data-name="name">
+          <label class="label" for="name">主要聯絡人姓名<span class="req">必填</span></label>
+          <input type="text" id="name" name="name" maxlength="50" autocomplete="name" placeholder="請填寫報名人的姓名">
+          <div class="err">請填寫姓名</div>
+        </div>
+        <div class="field" data-req="phone" data-name="phone">
+          <label class="label" for="phone">聯絡電話<span class="req">必填</span></label>
+          <p class="hint">請填寫活動當天可以聯繫到您的電話</p>
+          <input type="tel" id="phone" name="phone" maxlength="20" inputmode="tel" autocomplete="tel" placeholder="例：0912-345-678">
+          <div class="err">請填寫正確的電話號碼</div>
+        </div>
+        <div class="field" data-req="email" data-name="email">
+          <label class="label" for="email">電子信箱<span class="opt">選填</span></label>
+          <p class="hint">如有活動異動或重要通知，可提供電子信箱供聯繫</p>
+          <input type="email" id="email" name="email" maxlength="100" inputmode="email" autocomplete="email" placeholder="name@example.com">
+          <div class="err">電子信箱格式不正確</div>
+        </div>
+        <div class="field" data-req="radio" data-name="memberType">
+          <span class="label">本次參加活動的成員有哪些？<span class="req">必填</span></span>
+          <div class="choices" data-type="radio" data-name="memberType"
+            data-options='["親子家庭（有小朋友）","寵物家庭（有攜帶毛孩）","親子與寵物一起參加","一般民眾（沒有攜帶小朋友或寵物）"]'></div>
+          <div class="err">請選擇一項</div>
+        </div>
+        <div class="row2">
+          <div class="field" data-req="int1" data-name="totalPeople">
+            <label class="label" for="totalPeople">總人數<span class="req">必填</span></label>
+            <p class="hint">大人＋兒童，不含寵物</p>
+            <input type="number" id="totalPeople" name="totalPeople" min="1" max="50" inputmode="numeric" placeholder="例：3">
+            <div class="err">請填 1–50</div>
+          </div>
+          <div class="field" data-req="int0" data-name="petCount">
+            <label class="label" for="petCount">攜帶寵物數量<span class="req">必填</span></label>
+            <p class="hint">沒有攜帶請填 0</p>
+            <input type="number" id="petCount" name="petCount" min="0" max="20" inputmode="numeric" value="0">
+            <div class="err" id="petCountErr">請填寫數量</div>
+          </div>
+        </div>
+        <div class="field">
+          <span class="label">從哪裡得知本次活動？<span class="opt">選填</span></span>
+          <div class="choices cols2" data-type="radio" data-name="source"
+            data-options='["什浬鍋 Facebook","什浬鍋 Instagram","LINE 分享","親友分享","在地合作商家","其他"]'></div>
+        </div>
+        <div class="field">
+          <label class="label" for="note">其他備註或特殊需求<span class="opt">選填</span></label>
+          <textarea id="note" name="note" maxlength="500" placeholder="若有需要工作人員提前協助的事項，歡迎在此填寫"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- 第二部分：親子 -->
+    <div class="section" id="secKids" hidden>
+      <div class="sec-head"><div class="num">2</div><div><h2>親子參加資料 👧</h2><p>有攜帶小朋友參加，請填寫以下資料</p></div></div>
+      <div class="card">
+        <div class="row2">
+          <div class="field" data-req="int1" data-name="adults">
+            <label class="label" for="adults">大人人數<span class="req">必填</span></label>
+            <input type="number" id="adults" name="adults" min="1" max="50" inputmode="numeric">
+            <div class="err">請填寫人數</div>
+          </div>
+          <div class="field" data-req="int1" data-name="children">
+            <label class="label" for="children">兒童人數<span class="req">必填</span></label>
+            <input type="number" id="children" name="children" min="1" max="50" inputmode="numeric">
+            <div class="err">請填寫人數</div>
+          </div>
+        </div>
+        <div id="sumWarn" class="warn" hidden></div>
+        <div class="field" data-req="checkbox" data-name="childAges" style="margin-top:22px">
+          <span class="label">兒童年齡<span class="req">必填</span></span>
+          <p class="hint">如有多位兒童，請依實際情況複選</p>
+          <div class="choices cols2" data-type="checkbox" data-name="childAges"
+            data-options='["未滿3歲","3－5歲","6－8歲","9－12歲","13歲以上"]'></div>
+          <div class="err">請至少勾選一項</div>
+        </div>
+        <div class="row2">
+          <div class="field" data-req="radio" data-name="hasInfant">
+            <span class="label">嬰幼兒同行？<span class="req">必填</span></span>
+            <div class="choices" data-type="radio" data-name="hasInfant" data-options='["沒有","有"]'></div>
+            <div class="err">請選擇</div>
+          </div>
+          <div class="field" data-req="radio" data-name="needStroller">
+            <span class="label">使用嬰兒推車？<span class="req">必填</span></span>
+            <div class="choices" data-type="radio" data-name="needStroller" data-options='["不需要","需要"]'></div>
+            <div class="err">請選擇</div>
+          </div>
+        </div>
+        <div class="field">
+          <span class="label">小朋友會穿萬聖節服裝嗎？<span class="opt">選填</span></span>
+          <div class="choices" data-type="radio" data-name="kidCostume"
+            data-options='["會，已經準備好了！","還在準備中","不會，輕鬆參加就好"]'></div>
+        </div>
+        <div class="field" data-req="checkall" data-name="childSafety">
+          <span class="label">兒童安全確認<span class="req">必填</span></span>
+          <div class="choices" data-type="checkbox" data-name="childSafety"
+            data-options='["我了解兒童須由家長或法定監護人全程陪同，並配合工作人員的安全引導。"]'></div>
+          <div class="err">請勾選確認</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 第三部分：毛孩 -->
+    <div class="section" id="secPets" hidden>
+      <div class="sec-head"><div class="num">3</div><div><h2>毛孩參加資料 🐾</h2><p>活潑熱情或慢熟害羞的毛孩都歡迎！</p></div></div>
+      <div class="card">
+        <div class="field" data-req="checkbox" data-name="petTypes">
+          <span class="label">寵物種類<span class="req">必填</span></span>
+          <div class="choices cols2" data-type="checkbox" data-name="petTypes" data-options='["狗狗","貓咪","其他寵物"]'></div>
+          <div class="err">請至少勾選一項</div>
+        </div>
+        <div class="field" data-req="radio" data-name="petNum">
+          <span class="label">本次攜帶幾隻毛孩？<span class="req">必填</span></span>
+          <div class="choices cols2" data-type="radio" data-name="petNum" data-options='["1隻","2隻","3隻","4隻以上"]'></div>
+          <div class="err">請選擇</div>
+        </div>
+        <div class="field">
+          <label class="label" for="petNames">毛孩的名字或暱稱<span class="opt">選填</span></label>
+          <input type="text" id="petNames" name="petNames" maxlength="100" placeholder="多隻毛孩可一併填寫，例：豆花、布丁">
+        </div>
+        <div class="field">
+          <span class="label">毛孩的體型<span class="opt">選填・可複選</span></span>
+          <div class="choices cols2" data-type="checkbox" data-name="petSize" data-options='["小型","中型","大型"]'></div>
+        </div>
+        <div class="field">
+          <span class="label">毛孩平常外出時的狀況<span class="opt">可複選</span></span>
+          <p class="hint">每隻毛孩都有自己的個性，這題沒有標準答案，只是讓我們更了解毛孩的習慣 💛</p>
+          <div class="choices" data-type="checkbox" data-name="petTemper"
+            data-options='["喜歡與人互動","喜歡和其他毛孩玩耍","比較慢熟，需要一點時間適應","遇到陌生環境會比較緊張","比較喜歡保持自己的空間","其他情況，歡迎補充"]'></div>
+        </div>
+        <div class="field" data-req="radio" data-name="petMode">
+          <span class="label">活動當天毛孩參加方式<span class="req">必填</span></span>
+          <div class="choices" data-type="radio" data-name="petMode"
+            data-options='["使用牽繩陪走","使用寵物推車","依毛孩狀況搭配牽繩或推車","其他合適的安全方式"]'></div>
+          <div class="err">請選擇</div>
+        </div>
+        <div class="field">
+          <span class="label">毛孩會穿萬聖節服裝嗎？<span class="opt">選填</span></span>
+          <div class="choices" data-type="radio" data-name="petCostume"
+            data-options='["會，準備好變裝了！","還在準備中","不穿裝扮，舒適參加就好"]'></div>
+        </div>
+        <div class="field">
+          <label class="label" for="petNote">毛孩需要我們留意的地方<span class="opt">選填</span></label>
+          <textarea id="petNote" name="petNote" maxlength="500" placeholder="例如：比較怕生、容易緊張、對其他動物比較敏感…"></textarea>
+        </div>
+        <div class="field" data-req="checkall" data-name="petAgree">
+          <span class="label">毛孩參加提醒<span class="req">必填・請全部勾選</span></span>
+          <div class="choices" data-type="checkbox" data-name="petAgree"
+            data-options='["我了解活動期間須全程照顧毛孩，並使用牽繩、推車或其他合適的安全方式，避免毛孩自行奔跑或脫離控制。","我會自行清理毛孩的排泄物，並留意毛孩情緒與周遭環境。","若毛孩在活動中感到緊張或不舒服，我會適時帶離人群、休息，並配合工作人員的安全引導。"]'></div>
+          <div class="err">請勾選全部項目</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 第四部分 -->
+    <div class="section" id="sec4">
+      <div class="sec-head"><div class="num" id="num4">4</div><div><h2>活動安全與報名確認</h2><p>請閱讀以下事項，確認後勾選</p></div></div>
+      <div class="card">
+        <div class="field" data-req="checkall" data-name="timeAgree">
+          <span class="label">活動時間確認<span class="req">必填・請全部勾選</span></span>
+          <div class="choices" data-type="checkbox" data-name="timeAgree"
+            data-options='["我已了解活動集合報到時間為17:40－18:00，預計18:10出發。","若我可能晚到，會先至什浬鍋店內櫃檯報到，確認後續參加方式，不自行追趕遊街隊伍。"]'></div>
+          <div class="err">請勾選全部項目</div>
+        </div>
+        <div class="field" data-req="checkall" data-name="safetyAgree">
+          <span class="label">活動安全確認<span class="req">必填・請全部勾選</span></span>
+          <div class="choices" data-type="checkbox" data-name="safetyAgree"
+            data-options='["我會遵守工作人員及交通引導人員的指示。","我會照顧同行兒童及寵物，並共同維護自己與其他參加者的安全。","我了解如遇天候或其他不可抗力因素，主辦單位可能調整活動安排，並另行通知。"]'></div>
+          <div class="err">請勾選全部項目</div>
+        </div>
+        <div class="field" data-req="checkall" data-name="privacyAgree">
+          <span class="label">個人資料使用告知<span class="req">必填</span></span>
+          <div class="choices" data-type="checkbox" data-name="privacyAgree"
+            data-options='["我了解本表單所蒐集的姓名、聯絡方式、參加人數及活動安排所需資料，將由主辦單位用於本次活動報名統計、現場安排、安全聯繫及活動異動通知，並依相關法令及告知的保存期限妥善管理。"]'></div>
+          <div class="err">請勾選確認</div>
+        </div>
+        <div class="field">
+          <span class="label">活動照片與影像使用<span class="opt">選填</span></span>
+          <p class="hint">是否同意影像宣傳不影響活動報名。若有兒童影像，請由其家長或法定監護人作成選擇。</p>
+          <div class="choices" data-type="radio" data-name="photoConsent"
+            data-options='["同意主辦單位將活動照片或影像用於本次活動紀錄及後續宣傳。","不同意將可辨識我本人或同行兒童的影像用於公開宣傳。"]'></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 活動禮物（報名者現場領取） -->
+    <div class="gallery-sec" id="giftSec" hidden>
+      <h2>🎁 活動禮物</h2>
+      <p style="color:var(--muted);font-size:14px;margin:-6px 0 12px">完成報名後，活動當天現場發放 🎉</p>
+      <div class="gallery-grid multi" id="giftGrid"></div>
+    </div>
+
+    <div id="errBox" class="errbox" hidden></div>
+
+    <div class="submitbar"><div class="in">
+      <button type="submit" class="btn" id="submitBtn">🎃 送出報名</button>
+    </div></div>
+  </form>
+
+  <footer>主辦單位：什浬鍋｜雲林縣麥寮鄉中山路409號</footer>
+</div>
+
+<template id="doneTpl">
+  <div class="done">
+    <div class="big">🎃</div>
+    <h2>報名完成，期待與你相見！</h2>
+    <p style="color:var(--muted)">感謝你報名參加什浬鍋萬聖節親子遊街活動！</p>
+    <div class="ticket">
+      <small>你的報名編號</small>
+      <div class="id" data-id></div>
+      <div id="qrWrap" style="margin:16px auto 8px;background:#fff;padding:12px;border-radius:12px;display:inline-block"></div>
+      <small>📱 請截圖保存 QR code，報到時出示即可快速報到</small>
+    </div>
+    <div class="card">
+      <p style="margin:0 0 8px">📍 請於 <b>10/30（五）17:40－18:00</b> 至<b>什浬鍋停車場</b>報到，18:10 準時出發！</p>
+      <p style="margin:0;color:var(--muted)">如果會晚到，請至什浬鍋店內櫃檯報到，由工作人員協助確認後續參加方式。</p>
+    </div>
+    <p style="font-size:18px">期待大小朋友與毛孩們一起讓麥寮的萬聖節更加熱鬧！👻🧡</p>
+  </div>
+</template>
+
+<script>
+(function(){
+  'use strict';
+
+  // ====================================================
+  // ★★★ 部署後請把下面的網址換成你的 Apps Script 部署網址 ★★★
+  // ====================================================
+  const API_URL = 'https://script.google.com/macros/s/AKfycbyMe7vJdqTxwV8W8jsk7_LCB9iDOkAYu1WHr0Yo4Kzq_QWyeeyJ68eoE2oa8WbO8E2P/exec';
+  // 例如：const API_URL = 'https://script.google.com/macros/s/AKfycbx.../exec';
+  // ====================================================
+
+  const KIDS = ['親子家庭（有小朋友）','親子與寵物一起參加'];
+  const PETS = ['寵物家庭（有攜帶毛孩）','親子與寵物一起參加'];
+  const IS_PREVIEW = !API_URL;
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  const form = $('#form');
+
+  if (IS_PREVIEW) { const t = document.createElement('div'); t.className = 'preview-tag'; t.textContent = '預覽模式'; document.body.appendChild(t); }
+
+  // 產生選項
+  $$('.choices[data-options]').forEach(box => {
+    const type = box.dataset.type, name = box.dataset.name;
+    JSON.parse(box.dataset.options).forEach((o, i) => {
+      const id = name + '_' + i;
+      const lab = document.createElement('label');
+      lab.className = 'choice'; lab.htmlFor = id;
+      lab.innerHTML = '<input type="' + type + '" id="' + id + '" name="' + name + '"><span class="box"></span><span class="txt"></span>';
+      lab.querySelector('input').value = o;
+      lab.querySelector('.txt').textContent = o;
+      box.appendChild(lab);
+    });
+  });
+
+  // 呼叫後端 API
+  async function api(action, payload) {
+    if (IS_PREVIEW) {
+      await new Promise(r => setTimeout(r, 500));
+      if (action === 'getFormStatus') return { open: true };
+      if (action === 'submitRegistration') return { ok: true, id: 'H001' };
+      return {};
+    }
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: JSON.stringify({ action, ...payload }),
+      redirect: 'follow',
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    return data;
+  }
+
+  // 依參加成員顯示區塊
+  function sync() {
+    const type = (form.querySelector('input[name=memberType]:checked') || {}).value || '';
+    const kids = KIDS.includes(type), pets = PETS.includes(type);
+    show($('#secKids'), kids);
+    show($('#secPets'), pets);
+    const pc = $('#petCount');
+    if (type && !pets) { pc.value = 0; pc.disabled = true; }
+    else { pc.disabled = false; if (pets && pc.value === '0') pc.value = ''; }
+    let n = 2;
+    if (kids) $('#secKids .num').textContent = n++;
+    if (pets) $('#secPets .num').textContent = n++;
+    $('#num4').textContent = n;
+    checkSum();
+  }
+  function show(el, on) {
+    if (on && el.hidden) { el.hidden = false; el.classList.add('reveal'); }
+    else if (!on) el.hidden = true;
+  }
+  function checkSum() {
+    const w = $('#sumWarn');
+    const t = +$('#totalPeople').value, a = +$('#adults').value, c = +$('#children').value;
+    if (!$('#secKids').hidden && t && a && c && a + c !== t) {
+      w.hidden = false;
+      w.textContent = '小提醒：大人 ' + a + ' ＋ 兒童 ' + c + ' ＝ ' + (a + c) + ' 人，與總人數 ' + t + ' 人不同，請確認一下喔！';
+    } else w.hidden = true;
+  }
+  $('#petCount').addEventListener('input', e => {
+    const n = parseInt(e.target.value, 10);
+    if (n >= 1) {
+      const v = n >= 4 ? '4隻以上' : n + '隻';
+      const r = form.querySelector('input[name=petNum][value="' + v + '"]');
+      if (r) r.checked = true;
+    }
+  });
+  form.addEventListener('change', e => {
+    if (e.target.name === 'memberType') sync();
+    const f = e.target.closest('.field'); if (f) f.classList.remove('error');
+  });
+  form.addEventListener('input', e => {
+    if (['totalPeople','adults','children'].includes(e.target.name)) checkSum();
+    const f = e.target.closest('.field'); if (f && f.classList.contains('error')) validateField(f);
+  });
+
+  // 驗證
+  function validateField(f) {
+    if (f.closest('.section[hidden]')) return true;
+    const name = f.dataset.name, kind = f.dataset.req;
+    let ok = true;
+    const val = () => (form.elements[name] && form.elements[name].value || '').trim();
+    const checked = () => $$('input[name="' + name + '"]:checked', f).length;
+    const total = () => $$('input[name="' + name + '"]', f).length;
+    switch (kind) {
+      case 'text': ok = !!val(); break;
+      case 'phone': { const v = val(); ok = /^[\d\s+\-()#]+$/.test(v) && (v.match(/\d/g) || []).length >= 8; break; }
+      case 'email': { const v = val(); ok = !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); break; }
+      case 'int1': { const v = val(); ok = /^\d+$/.test(v) && +v >= 1 && +v <= 50; break; }
+      case 'int0': {
+        const v = val(); const type = (form.querySelector('input[name=memberType]:checked') || {}).value;
+        const needPet = PETS.includes(type);
+        ok = /^\d+$/.test(v) && (needPet ? +v >= 1 && +v <= 20 : true);
+        $('#petCountErr').textContent = needPet ? '有攜帶毛孩，請填 1 以上' : '請填寫數量';
+        break;
+      }
+      case 'radio': case 'checkbox': ok = checked() > 0; break;
+      case 'checkall': ok = checked() === total(); break;
+    }
+    f.classList.toggle('error', !ok);
+    return ok;
+  }
+
+  function collect() {
+    const d = {};
+    const fd = new FormData(form);
+    const multi = ['childAges','petTypes','petSize','petTemper','petAgree','timeAgree','safetyAgree'];
+    ['website','name','phone','email','memberType','totalPeople','petCount','source','note',
+     'adults','children','hasInfant','needStroller','kidCostume',
+     'petNum','petNames','petMode','petCostume','petNote','photoConsent'].forEach(k => d[k] = fd.get(k) || '');
+    multi.forEach(k => d[k] = fd.getAll(k));
+    d.petCount = $('#petCount').value;
+    d.childSafety = fd.getAll('childSafety').length === 1;
+    d.privacyAgree = fd.getAll('privacyAgree').length === 1;
+    return d;
+  }
+
+  function showErrors(list) {
+    const box = $('#errBox');
+    if (!list || !list.length) { box.hidden = true; return; }
+    box.innerHTML = '<b>請確認以下項目：</b><ul></ul>';
+    list.forEach(t => { const li = document.createElement('li'); li.textContent = t; box.querySelector('ul').appendChild(li); });
+    box.hidden = false;
+  }
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    showErrors([]);
+    const bad = $$('.field[data-req]').filter(f => !validateField(f));
+    if (bad.length) {
+      bad[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const inp = bad[0].querySelector('input:not([type=radio]):not([type=checkbox])');
+      if (inp) setTimeout(() => inp.focus({ preventScroll: true }), 400);
+      return;
+    }
+    const btn = $('#submitBtn');
+    btn.disabled = true; btn.textContent = '👻 送出中…';
+    try {
+      const res = await api('submitRegistration', { data: collect() });
+      if (res && res.ok) return done(res.id);
+      showErrors((res && res.errors) || ['送出失敗，請稍後再試']);
+      $('#errBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch (err) {
+      showErrors(['網路或系統忙碌中，請稍後再試一次。（' + (err && err.message || err) + '）']);
+    }
+    btn.disabled = false; btn.textContent = '🎃 送出報名';
+  });
+
+  function done(id) {
+    const node = $('#doneTpl').content.cloneNode(true);
+    node.querySelector('[data-id]').textContent = id;
+    const app = $('#app');
+    app.innerHTML = '';
+    app.appendChild(node);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // 產生 QR code
+    const base = location.href.replace(/\/[^\/]*$/, '/');
+    const url = base + 'checkin.html?id=' + encodeURIComponent(id);
+    const wrap = document.getElementById('qrWrap');
+    if (wrap && typeof QRCode !== 'undefined') {
+      new QRCode(wrap, { text: url, width: 180, height: 180, colorDark: '#1a1a2e', colorLight: '#ffffff' });
+    }
+  }
+
+  // Lightbox
+  const lb = $('#lightbox');
+  lb.querySelector('.close').onclick = () => lb.classList.remove('on');
+  lb.onclick = e => { if (e.target === lb) lb.classList.remove('on'); };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('on'); });
+  function openLightbox(src) { lb.querySelector('img').src = src; lb.classList.add('on'); }
+
+  // 載入圖片（路線圖 & 禮物）
+  api('getImages').then(res => {
+    if (!res || !res.images) return;
+    const routes = res.images.filter(i => i.category === 'route');
+    const gifts = res.images.filter(i => i.category === 'gift');
+    if (routes.length) {
+      $('#routeSec').hidden = false;
+      $('#routeGrid').innerHTML = routes.map(i => '<img src="' + i.url + '" alt="遊街路線圖" loading="lazy">').join('');
+    }
+    if (gifts.length) {
+      $('#giftSec').hidden = false;
+      $('#giftGrid').innerHTML = gifts.map(i => '<img src="' + i.url + '" alt="' + (i.name || '活動禮物') + '" loading="lazy">').join('');
+    }
+    $$('.gallery-grid img').forEach(img => img.onclick = () => openLightbox(img.src));
+  }).catch(() => {});
+
+  // 報名狀態（截止 / 額滿）
+  api('getFormStatus').then(s => {
+    if (s && !s.open) {
+      form.hidden = true;
+      const b = $('#closedBox'); b.hidden = false;
+      b.innerHTML = '<div style="font-size:48px">🕸️</div><h2 style="margin:6px 0"></h2>';
+      b.querySelector('h2').textContent = s.message;
+    }
+  }).catch(() => {});
+
+  sync();
+})();
+</script>
+</body>
+</html>

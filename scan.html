@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🎃 萬聖節遊街 — 掃碼報到</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0d0d1a;--card:#1a1a2e;--primary:#ff6600;--ok:#00c853;--fail:#ff3d3d;--text:#f5f0ff;--muted:#aaa}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;display:flex;flex-direction:column;align-items:center}
+.top{width:100%;padding:16px;text-align:center;background:var(--card);border-bottom:2px solid #2a2a4a}
+.top h1{font-size:20px;margin:0 0 4px}
+.top p{color:var(--muted);font-size:13px;margin:0}
+
+/* 登入 */
+.login{max-width:400px;width:100%;padding:24px 16px;text-align:center}
+.login input{width:100%;padding:14px;border:2px solid #333;border-radius:10px;background:#111;color:#fff;font-size:16px;text-align:center;margin:12px 0}
+.login input:focus{outline:none;border-color:var(--primary)}
+.btn{display:block;width:100%;padding:14px;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn.primary{background:var(--primary);color:#fff}
+.btn.primary:active{transform:scale(.97)}
+
+/* 掃描器 */
+.scanner-wrap{width:100%;max-width:500px;padding:16px;flex:1;display:flex;flex-direction:column}
+#reader{width:100%;border-radius:12px;overflow:hidden;background:#000}
+#reader video{width:100%!important;border-radius:12px}
+.manual{margin:16px 0;display:flex;gap:8px}
+.manual input{flex:1;padding:12px;border:2px solid #333;border-radius:10px;background:#111;color:#fff;font-size:16px}
+.manual input:focus{outline:none;border-color:var(--primary)}
+.manual button{padding:12px 20px;border:none;border-radius:10px;background:var(--primary);color:#fff;font-weight:700;font-size:15px;cursor:pointer}
+.hint{color:var(--muted);font-size:13px;text-align:center;margin:8px 0}
+
+/* 結果 */
+.result{max-width:500px;width:100%;padding:16px}
+.result-card{background:var(--card);border-radius:16px;padding:24px;text-align:center;margin:8px 0;border:3px solid transparent}
+.result-card.ok{border-color:var(--ok)}
+.result-card.fail{border-color:var(--fail)}
+.result-card.dup{border-color:#ffc107}
+.result-card .icon{font-size:56px;margin:0 0 12px}
+.result-card h2{font-size:22px;margin:0 0 8px}
+.result-card .id{font-size:28px;font-weight:800;color:var(--primary);margin:8px 0}
+.result-card .info{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;text-align:left;margin:16px 0;font-size:14px}
+.result-card .info dt{color:var(--muted)}
+.result-card .info dd{margin:0}
+.result-card .time{color:var(--muted);font-size:13px;margin:8px 0 0}
+.btn.next{margin-top:16px;background:#333;color:#fff;font-size:15px}
+.btn.next:active{background:#444}
+
+/* 統計 */
+.stats{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap;justify-content:center}
+.stat{background:var(--card);border-radius:10px;padding:10px 16px;text-align:center;min-width:80px}
+.stat .n{font-size:22px;font-weight:800;color:var(--primary)}
+.stat .l{font-size:11px;color:var(--muted)}
+
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <h1>🎃 掃碼報到</h1>
+  <p>什浬鍋萬聖節親子遊街活動</p>
+</div>
+
+<!-- 登入 -->
+<div class="login" id="loginView">
+  <p style="font-size:48px;margin:24px 0">👻</p>
+  <p>工作人員請輸入管理密碼</p>
+  <input type="password" id="scanPw" placeholder="管理密碼" autofocus>
+  <button class="btn primary" id="loginBtn">進入掃碼報到</button>
+  <p id="loginErr" style="color:var(--fail);margin:8px 0;font-size:14px" hidden></p>
+</div>
+
+<!-- 掃描區 -->
+<div class="scanner-wrap" id="scanView" hidden>
+  <div class="stats" id="statsBar"></div>
+  <div id="reader"></div>
+  <div class="manual">
+    <input type="text" id="manualId" placeholder="手動輸入編號，如 H001">
+    <button id="manualBtn">報到</button>
+  </div>
+  <p class="hint">📷 將 QR Code 對準鏡頭，或手動輸入報名編號</p>
+</div>
+
+<!-- 結果 -->
+<div class="result" id="resultView" hidden></div>
+
+<script>
+(function(){
+  // ====================================================
+  const API_URL = 'https://script.google.com/macros/s/AKfycbyMe7vJdqTxwV8W8jsk7_LCB9iDOkAYu1WHr0Yo4Kzq_QWyeeyJ68eoE2oa8WbO8E2P/exec';
+  // ====================================================
+  const IS_PREVIEW = !API_URL;
+  const $ = s => document.querySelector(s);
+  let PW = '';
+  let scanner = null;
+  let scanning = false;
+  let stats = { total: 0, checkedIn: 0 };
+
+  async function api(action, payload) {
+    if (IS_PREVIEW) {
+      await new Promise(r => setTimeout(r, 400));
+      if (action === 'adminGetData') return mockData();
+      if (action === 'checkinById') return mockCheckin(payload.id);
+      if (action === 'lookupRegistration') return mockLookup(payload.id);
+      return {};
+    }
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: JSON.stringify({ action, ...payload }),
+      redirect: 'follow',
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    return data;
+  }
+
+  // --- 登入 ---
+  $('#loginBtn').onclick = async () => {
+    PW = $('#scanPw').value.trim();
+    if (!PW) return;
+    $('#loginBtn').disabled = true;
+    $('#loginBtn').textContent = '驗證中…';
+    try {
+      const res = await api('adminGetData', { pw: PW });
+      if (res.rows) {
+        stats.total = res.rows.length;
+        stats.checkedIn = res.rows.filter(r => r.checkedIn === '✔').length;
+      }
+      renderStats();
+      $('#loginView').hidden = true;
+      $('#scanView').hidden = false;
+      startScanner();
+    } catch (e) {
+      $('#loginErr').textContent = '密碼錯誤或無法連線';
+      $('#loginErr').hidden = false;
+    }
+    $('#loginBtn').disabled = false;
+    $('#loginBtn').textContent = '進入掃碼報到';
+  };
+  $('#scanPw').addEventListener('keydown', e => { if (e.key === 'Enter') $('#loginBtn').click(); });
+
+  // --- 統計 ---
+  function renderStats() {
+    $('#statsBar').innerHTML =
+      '<div class="stat"><div class="n">' + stats.total + '</div><div class="l">總報名</div></div>' +
+      '<div class="stat"><div class="n">' + stats.checkedIn + '</div><div class="l">已報到</div></div>' +
+      '<div class="stat"><div class="n">' + (stats.total - stats.checkedIn) + '</div><div class="l">未報到</div></div>';
+  }
+
+  // --- 掃描器 ---
+  function startScanner() {
+    if (scanner) return;
+    scanner = new Html5Qrcode('reader');
+    scanner.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
+      onScan,
+      () => {}
+    ).catch(err => {
+      $('#reader').innerHTML = '<p style="padding:40px;text-align:center;color:var(--muted)">📷 無法存取相機<br><br>請使用下方手動輸入報名編號</p>';
+    });
+    scanning = true;
+  }
+
+  function stopScanner() {
+    if (scanner && scanning) {
+      try { scanner.stop(); } catch(e){}
+      scanning = false;
+    }
+  }
+
+  // --- 掃到 QR Code ---
+  let lastScan = '';
+  function onScan(text) {
+    if (text === lastScan) return;
+    lastScan = text;
+    // 從 URL 或純文字中解析編號
+    let id = text;
+    const match = text.match(/[?&]id=([^&]+)/);
+    if (match) id = decodeURIComponent(match[1]);
+    // 也接受純編號如 H001
+    if (/^H\d{3,}$/i.test(id.trim())) {
+      doCheckin(id.trim().toUpperCase());
+    }
+  }
+
+  // --- 手動輸入 ---
+  $('#manualBtn').onclick = () => {
+    const id = $('#manualId').value.trim().toUpperCase();
+    if (!id) return;
+    doCheckin(id);
+    $('#manualId').value = '';
+  };
+  $('#manualId').addEventListener('keydown', e => { if (e.key === 'Enter') $('#manualBtn').click(); });
+
+  // --- 報到 ---
+  async function doCheckin(id) {
+    stopScanner();
+    $('#scanView').hidden = true;
+    $('#resultView').hidden = false;
+    $('#resultView').innerHTML = '<div class="result-card"><div class="icon">⏳</div><h2>查詢中…</h2><div class="id">' + esc(id) + '</div></div>';
+
+    try {
+      // 先查詢報名資料
+      const lookup = await api('lookupRegistration', { pw: PW, id: id });
+      const reg = lookup.registration;
+
+      if (reg.checkedIn === '✔') {
+        // 已經報到過
+        showResult('dup', '⚠️', '已報到過', id, reg, '此編號已於 ' + (reg.checkinTime || '稍早') + ' 報到');
+        return;
+      }
+
+      // 執行報到
+      await api('checkinById', { pw: PW, id: id });
+      stats.checkedIn++;
+      showResult('ok', '✅', '報到成功！', id, reg, '');
+    } catch (e) {
+      showResult('fail', '❌', '報到失敗', id, null, e.message || '找不到此報名編號');
+    }
+  }
+
+  function showResult(cls, icon, title, id, reg, note) {
+    let html = '<div class="result-card ' + cls + '">'
+      + '<div class="icon">' + icon + '</div>'
+      + '<h2>' + title + '</h2>'
+      + '<div class="id">' + esc(id) + '</div>';
+    if (reg) {
+      html += '<dl class="info">'
+        + '<dt>姓名</dt><dd>' + esc(reg.name) + '</dd>'
+        + '<dt>電話</dt><dd>' + esc(reg.phone) + '</dd>'
+        + '<dt>人數</dt><dd>' + esc(reg.totalPeople) + ' 人' + (Number(reg.petCount) > 0 ? '＋' + reg.petCount + ' 隻毛孩' : '') + '</dd>'
+        + '<dt>類型</dt><dd>' + esc(reg.memberType) + '</dd>'
+        + (reg.note ? '<dt>備註</dt><dd>' + esc(reg.note) + '</dd>' : '')
+        + '</dl>';
+    }
+    if (note) html += '<p class="time">' + esc(note) + '</p>';
+    html += '</div>'
+      + '<button class="btn next" onclick="nextScan()">📷 繼續掃碼</button>';
+    $('#resultView').innerHTML = html;
+    renderStats();
+  }
+
+  window.nextScan = function() {
+    lastScan = '';
+    $('#resultView').hidden = true;
+    $('#scanView').hidden = false;
+    renderStats();
+    startScanner();
+  };
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  // --- 預覽模式假資料 ---
+  function mockData() {
+    return { rows: [
+      { id:'H001', name:'王小明', checkedIn:'', checkinTime:'' },
+      { id:'H002', name:'陳美玲', checkedIn:'✔', checkinTime:'17:45:00' },
+      { id:'H003', name:'林大華', checkedIn:'', checkinTime:'' },
+    ], fields: [], serverTime: '' };
+  }
+  function mockLookup(id) {
+    const db = {
+      H001: { id:'H001', name:'王小明', phone:'0912-345-678', totalPeople:'3', petCount:'1', memberType:'親子與寵物一起參加', checkedIn:'', checkinTime:'', note:'' },
+      H002: { id:'H002', name:'陳美玲', phone:'0988-111-222', totalPeople:'4', petCount:'0', memberType:'親子家庭（有小朋友）', checkedIn:'✔', checkinTime:'17:45:00', note:'有一位小朋友需要輪椅通道' },
+      H003: { id:'H003', name:'林大華', phone:'0933-456-789', totalPeople:'1', petCount:'2', memberType:'寵物家庭（有攜帶毛孩）', checkedIn:'', checkinTime:'', note:'' },
+    };
+    if (db[id]) return { registration: db[id] };
+    throw new Error('找不到報名編號 ' + id);
+  }
+  function mockCheckin(id) {
+    return { id: id, checkedIn:'✔', checkinTime: new Date().toTimeString().slice(0,8) };
+  }
+})();
+</script>
+</body>
+</html>

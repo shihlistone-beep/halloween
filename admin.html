@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>報名管理後台｜什浬鍋萬聖節</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#170e24;--bg2:#22143a;--card:#24173a;--card2:#2e1f48;--line:#3f2d5e;--text:#f7efe3;--muted:#bfaed6;
+  --orange:#ff8a1f;--orange2:#ffb347;--green:#7ee0a1;--red:#ff6b6b;--blue:#8ec5ff}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.55;font-size:15px;min-height:100vh}
+.wrap{max-width:1100px;margin:0 auto;padding:16px 16px 60px}
+button,input{font:inherit}
+.btn{appearance:none;border:1.5px solid var(--line);background:var(--card2);color:var(--text);padding:9px 14px;border-radius:11px;cursor:pointer;font-weight:700;white-space:nowrap}
+.btn:hover{border-color:#6a5390}
+.btn.primary{background:var(--orange);color:#1a0f00;border-color:var(--orange)}
+.hidden{display:none!important}
+
+/* Login */
+.login{max-width:360px;margin:16vh auto 0;text-align:center}
+.login .icon{font-size:56px}
+.login input{width:100%;margin:16px 0 10px;padding:13px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg2);color:var(--text);outline:none}
+.login input:focus{border-color:var(--orange)}
+.login .btn{width:100%;padding:13px}
+.msg{color:var(--red);min-height:22px;font-size:14px}
+
+/* Top */
+.top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.top h1{font-size:20px;margin:0;flex:1;min-width:200px}
+.top h1 small{display:block;font-size:12.5px;color:var(--muted);font-weight:400}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.stat .k{color:var(--muted);font-size:13px}
+.stat .v{font-size:26px;font-weight:900;line-height:1.2}
+.stat .s{font-size:12.5px;color:var(--muted)}
+.stat.hl{border-color:#ff8a1f88;background:linear-gradient(135deg,#3a2340,var(--card))}
+.stat.hl .v{color:var(--orange)}
+.stat.ok .v{color:var(--green)}
+.bar{height:6px;background:var(--bg2);border-radius:9px;margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--green);border-radius:9px;transition:width .3s}
+
+/* Tools */
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5}
+.search{flex:1;min-width:200px;padding:10px 14px;border-radius:11px;border:1.5px solid var(--line);background:var(--bg2);color:var(--text);outline:none}
+.search:focus{border-color:var(--orange)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--line);background:transparent;color:var(--muted);padding:6px 12px;border-radius:99px;cursor:pointer;font-size:13.5px;font-weight:700}
+.chip.on{background:var(--orange);border-color:var(--orange);color:#1a0f00}
+.count{color:var(--muted);font-size:13px;margin:0 0 8px}
+
+/* List */
+.list{display:grid;gap:10px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.item.in{border-color:#7ee0a166;background:linear-gradient(90deg,#1f3a2c55,var(--card) 40%)}
+.row{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer}
+.id{font-weight:900;color:var(--orange);min-width:48px;font-variant-numeric:tabular-nums}
+.main{flex:1;min-width:0}
+.main .n{font-weight:700;font-size:16px}
+.main .p{color:var(--muted);font-size:13.5px}
+.badges{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.b{font-size:12px;padding:1px 8px;border-radius:99px;background:var(--bg2);border:1px solid var(--line);white-space:nowrap}
+.b.warn{border-color:#ff6b6b88;color:#ffb3b3}
+.b.note{border-color:#ffb34788;color:var(--orange2)}
+.ck{flex:none;min-width:84px;height:44px;border-radius:12px;border:2px solid var(--line);background:var(--bg2);color:var(--muted);font-weight:900;cursor:pointer}
+.ck.on{background:var(--green);border-color:var(--green);color:#0d2416}
+.ck[disabled]{opacity:.5}
+.detail{display:none;border-top:1px dashed var(--line);padding:12px 14px;background:var(--card2)}
+.item.open .detail{display:block}
+.detail dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;margin:0;font-size:14px}
+.detail dt{color:var(--muted)}
+.detail dd{margin:0;word-break:break-word}
+.detail a{color:var(--blue)}
+.empty{text-align:center;color:var(--muted);padding:40px 0}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#000c;color:#fff;padding:10px 18px;border-radius:99px;font-size:14px;z-index:20;transition:opacity .3s}
+/* Image Manager */
+.img-sec{margin-top:24px;border-top:1px solid var(--line);padding-top:20px}
+.img-sec h2{font-size:18px;margin:0 0 12px}
+.img-tabs{display:flex;gap:6px;margin-bottom:12px}
+.img-tab{border:1.5px solid var(--line);background:transparent;color:var(--muted);padding:8px 16px;border-radius:99px;cursor:pointer;font-size:14px;font-weight:700}
+.img-tab.on{background:var(--orange);border-color:var(--orange);color:#1a0f00}
+.upload-area{border:2px dashed var(--line);border-radius:14px;padding:24px;text-align:center;cursor:pointer;transition:border-color .15s;margin-bottom:14px}
+.upload-area:hover,.upload-area.drag{border-color:var(--orange)}
+.upload-area input{display:none}
+.upload-area p{margin:4px 0;color:var(--muted);font-size:14px}
+.upload-area .icon{font-size:36px}
+.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.img-card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.img-card img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+.img-card .info{padding:8px 10px;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.img-card .del{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.7);color:#fff;border:0;cursor:pointer;font-size:16px;display:grid;place-items:center}
+.img-card .del:hover{background:var(--red)}
+.uploading{opacity:.5;pointer-events:none}
+.preview-tag{position:fixed;top:8px;right:8px;background:#ffb347;color:#1a0f00;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;z-index:30}
+@media (max-width:600px){.detail dl{grid-template-columns:1fr}.detail dt{margin-top:6px}.top .btn{flex:1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div id="loginView" class="login">
+    <div class="icon">🎃</div>
+    <h2 style="margin:6px 0 0">報名管理後台</h2>
+    <p style="color:var(--muted);margin:4px 0 0">什浬鍋萬聖節親子遊街</p>
+    <form id="loginForm">
+      <input type="password" id="pw" placeholder="請輸入管理密碼" autocomplete="current-password">
+      <div class="msg" id="loginMsg"></div>
+      <button class="btn primary" type="submit">登入</button>
+    </form>
+  </div>
+
+  <div id="mainView" class="hidden">
+    <div class="top">
+      <h1>🎃 萬聖節遊街｜報名管理<small id="updated">—</small></h1>
+      <button class="btn" id="refreshBtn">🔄 重新整理</button>
+      <button class="btn" id="exportBtn">⬇️ 匯出 Excel (CSV)</button>
+      <button class="btn" id="logoutBtn">登出</button>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <div class="tools">
+      <input class="search" id="q" type="search" placeholder="搜尋姓名、電話、編號、毛孩名字…">
+      <div class="chips" id="chips"></div>
+    </div>
+    <p class="count" id="count"></p>
+    <div class="list" id="list"></div>
+
+    <!-- 圖片管理 -->
+    <div class="img-sec">
+      <h2>🖼️ 前端圖片管理</h2>
+      <div class="img-tabs">
+        <button class="img-tab on" data-cat="route">🗺️ 遊街路線圖</button>
+        <button class="img-tab" data-cat="gift">🎁 活動禮物</button>
+      </div>
+      <div class="upload-area" id="uploadArea">
+        <input type="file" id="fileInput" accept="image/*" multiple>
+        <div class="icon">📤</div>
+        <p><b>點擊選擇圖片</b>或拖拽到這裡</p>
+        <p>支援 JPG / PNG / WebP，每張建議 2MB 以內</p>
+      </div>
+      <div class="img-grid" id="imgGrid"></div>
+    </div>
+  </div>
+</div>
+<div class="toast hidden" id="toast"></div>
+
+<script>
+(function(){
+  'use strict';
+
+  // ====================================================
+  // ★★★ 部署後請把下面的網址換成你的 Apps Script 部署網址 ★★★
+  // ====================================================
+  const API_URL = 'https://script.google.com/macros/s/AKfycbyMe7vJdqTxwV8W8jsk7_LCB9iDOkAYu1WHr0Yo4Kzq_QWyeeyJ68eoE2oa8WbO8E2P/exec';
+  // 例如：const API_URL = 'https://script.google.com/macros/s/AKfycbx.../exec';
+  // ====================================================
+
+  const IS_PREVIEW = !API_URL;
+  const $ = s => document.querySelector(s);
+  const $$ = s => document.querySelectorAll(s);
+  let PW = '', ROWS = [], FIELDS = [], FILTER = 'all', timer = null;
+
+  const store = {
+    get(k){ try { return sessionStorage.getItem(k) || ''; } catch(e){ return ''; } },
+    set(k,v){ try { v ? sessionStorage.setItem(k,v) : sessionStorage.removeItem(k); } catch(e){} }
+  };
+
+  if (IS_PREVIEW) { const t = document.createElement('div'); t.className = 'preview-tag'; t.textContent = '預覽模式・範例資料'; document.body.appendChild(t); }
+
+  // ---------- 後端呼叫 ----------
+  async function api(action, payload) {
+    if (IS_PREVIEW) {
+      await new Promise(r => setTimeout(r, 300));
+      if (action === 'adminGetData') return mockData();
+      if (action === 'adminSetCheckin') return { id: payload.id, checkedIn: payload.checked ? '✔' : '', checkinTime: payload.checked ? new Date().toTimeString().slice(0,8) : '' };
+      if (action === 'getImages') return mockImages();
+      if (action === 'adminUploadImage') { const img = { id:'mock_'+Date.now(), category:payload.category, name:payload.fileName, url:'https://placehold.co/400x400/e67e22/fff?text='+encodeURIComponent(payload.fileName), createdAt:new Date().toLocaleString('zh-TW') }; window._mockImgs.push(img); return { ok:true, image:img }; }
+      if (action === 'adminDeleteImage') { window._mockImgs = window._mockImgs.filter(i=>i.id!==payload.fileId); return { ok:true }; }
+      return {};
+    }
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
+      body: JSON.stringify({ action, ...payload }),
+      redirect: 'follow',
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    return data;
+  }
+
+  // ---------- 登入 ----------
+  $('#loginForm').addEventListener('submit', e => { e.preventDefault(); login($('#pw').value); });
+  async function login(pw) {
+    $('#loginMsg').textContent = '';
+    try {
+      const data = await api('adminGetData', { pw });
+      PW = pw; store.set('hw_pw', pw);
+      $('#loginView').classList.add('hidden'); $('#mainView').classList.remove('hidden');
+      apply(data);
+      clearInterval(timer); timer = setInterval(load, 30000);
+    } catch (err) {
+      store.set('hw_pw', '');
+      $('#loginMsg').textContent = (err && err.message) || '登入失敗';
+    }
+  }
+  $('#logoutBtn').onclick = () => { store.set('hw_pw',''); PW=''; clearInterval(timer); location.reload(); };
+  const saved = store.get('hw_pw'); if (saved) login(saved);
+
+  // ---------- 資料 ----------
+  async function load() {
+    try { apply(await api('adminGetData', { pw: PW })); }
+    catch (err) { toast('更新失敗：' + ((err && err.message) || err)); }
+  }
+  $('#refreshBtn').onclick = () => { load(); toast('已重新整理'); };
+
+  function apply(data) {
+    ROWS = data.rows || []; FIELDS = data.fields || [];
+    $('#updated').textContent = '最後更新 ' + (data.serverTime || '') + '・每 30 秒自動更新';
+    renderStats(); renderChips(); renderList();
+  }
+
+  const num = v => parseInt(v, 10) || 0;
+  const hasKids = r => num(r.children) > 0;
+  const hasPets = r => num(r.petCount) > 0;
+  const isIn = r => !!r.checkedIn;
+
+  function renderStats() {
+    const s = { groups: ROWS.length, people: 0, adults: 0, kids: 0, pets: 0, inG: 0, inP: 0, stroller: 0, infant: 0, petStroller: 0, noPhoto: 0, nervous: 0 };
+    ROWS.forEach(r => {
+      s.people += num(r.totalPeople); s.pets += num(r.petCount);
+      s.kids += num(r.children);
+      if (isIn(r)) { s.inG++; s.inP += num(r.totalPeople); }
+      if (r.needStroller === '需要') s.stroller++;
+      if (r.hasInfant === '有') s.infant++;
+      if (/推車/.test(r.petMode)) s.petStroller++;
+      if (r.photoConsent === '不同意') s.noPhoto++;
+      if (/緊張|慢熟|自己的空間/.test(r.petTemper) || r.petNote) s.nervous++;
+    });
+    const pct = s.people ? Math.round(s.inP / s.people * 100) : 0;
+    const card = (k, v, sub, cls) => '<div class="stat ' + (cls||'') + '"><div class="k">' + k + '</div><div class="v">' + v + '</div>' + (sub ? '<div class="s">' + sub + '</div>' : '') + '</div>';
+    $('#stats').innerHTML =
+      card('報名組數', s.groups, '', 'hl') +
+      card('總人數', s.people, '兒童 ' + s.kids + ' 人', 'hl') +
+      card('毛孩', s.pets + ' 隻', '使用寵物推車 ' + s.petStroller + ' 組') +
+      '<div class="stat ok"><div class="k">已報到</div><div class="v">' + s.inP + ' / ' + s.people + '</div><div class="s">' + s.inG + ' 組・' + pct + '%</div><div class="bar"><i style="width:' + pct + '%"></i></div></div>' +
+      card('嬰兒推車', s.stroller + ' 組', '嬰幼兒同行 ' + s.infant + ' 組') +
+      card('毛孩需留意', s.nervous + ' 組', '慢熟／緊張／有備註') +
+      card('不同意拍照', s.noPhoto + ' 組', '攝影請避開');
+  }
+
+  const FILTERS = [
+    ['all','全部', () => true],
+    ['todo','未報到', r => !isIn(r)],
+    ['done','已報到', r => isIn(r)],
+    ['kids','有小孩', hasKids],
+    ['pets','有毛孩', hasPets],
+    ['nophoto','不同意拍照', r => r.photoConsent === '不同意'],
+    ['note','有備註', r => !!(r.note || r.petNote)],
+  ];
+  function renderChips() {
+    const box = $('#chips'); box.innerHTML = '';
+    FILTERS.forEach(([k, label, fn]) => {
+      const b = document.createElement('button');
+      b.className = 'chip' + (FILTER === k ? ' on' : '');
+      b.textContent = label + ' ' + ROWS.filter(fn).length;
+      b.onclick = () => { FILTER = k; renderChips(); renderList(); };
+      box.appendChild(b);
+    });
+  }
+
+  $('#q').addEventListener('input', () => renderList());
+
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  const openSet = new Set();
+  function renderList() {
+    const q = $('#q').value.trim().toLowerCase();
+    const qd = q.replace(/\D/g, '');
+    const fn = (FILTERS.find(f => f[0] === FILTER) || FILTERS[0])[2];
+    const rows = ROWS.filter(fn).filter(r => {
+      if (!q) return true;
+      const hay = [r.id, r.name, r.email, r.petNames, r.note].join(' ').toLowerCase();
+      return hay.includes(q) || (qd.length >= 3 && String(r.phone).replace(/\D/g,'').includes(qd));
+    });
+    $('#count').textContent = '顯示 ' + rows.length + ' / ' + ROWS.length + ' 筆';
+    const list = $('#list');
+    if (!rows.length) { list.innerHTML = '<div class="empty">' + (ROWS.length ? '找不到符合的報名' : '目前還沒有報名資料 👻') + '</div>'; return; }
+
+    list.innerHTML = rows.map(r => {
+      const badges = [];
+      badges.push('<span class="b">👥 ' + esc(r.totalPeople) + '人</span>');
+      if (hasKids(r)) badges.push('<span class="b">👧 兒童' + esc(r.children) + '</span>');
+      if (hasPets(r)) badges.push('<span class="b">🐾 ' + esc(r.petCount) + '隻' + (r.petNames ? '・' + esc(r.petNames) : '') + '</span>');
+      if (r.needStroller === '需要') badges.push('<span class="b">🍼 推車</span>');
+      if (r.photoConsent === '不同意') badges.push('<span class="b warn">🚫 不拍照</span>');
+      if (r.note || r.petNote) badges.push('<span class="b note">📝 備註</span>');
+      const det = FIELDS.filter(([k]) => r[k] && !['id','name'].includes(k))
+        .map(([k, label]) => '<dt>' + esc(label) + '</dt><dd>' + (k === 'phone' ? '<a href="tel:' + esc(String(r[k]).replace(/[^\d+]/g,'')) + '">' + esc(r[k]) + '</a>' : esc(r[k])) + '</dd>').join('');
+      return '<div class="item' + (isIn(r) ? ' in' : '') + (openSet.has(r.id) ? ' open' : '') + '" data-id="' + esc(r.id) + '">' +
+        '<div class="row"><div class="id">' + esc(r.id) + '</div>' +
+        '<div class="main"><div class="n">' + esc(r.name) + '</div><div class="p">' + esc(r.phone) + (isIn(r) ? '・' + esc(r.checkinTime) + ' 報到' : '') + '</div><div class="badges">' + badges.join('') + '</div></div>' +
+        '<button class="ck' + (isIn(r) ? ' on' : '') + '" data-ck>' + (isIn(r) ? '✔ 已報到' : '報到') + '</button></div>' +
+        '<div class="detail"><dl>' + det + '</dl></div></div>';
+    }).join('');
+  }
+
+  $('#list').addEventListener('click', async e => {
+    const item = e.target.closest('.item'); if (!item) return;
+    const id = item.dataset.id;
+    const r = ROWS.find(x => x.id === id);
+    if (e.target.closest('[data-ck]')) {
+      const btn = e.target.closest('[data-ck]');
+      const next = !isIn(r);
+      if (!next && !confirm('取消 ' + r.id + ' ' + r.name + ' 的報到？')) return;
+      btn.disabled = true;
+      try {
+        const res = await api('adminSetCheckin', { pw: PW, id, checked: next });
+        r.checkedIn = res.checkedIn; r.checkinTime = res.checkinTime;
+        renderStats(); renderChips(); renderList();
+        toast(next ? '✔ ' + r.name + ' 已報到' : '已取消報到');
+      } catch (err) { btn.disabled = false; toast('失敗：' + ((err && err.message) || err)); }
+      return;
+    }
+    if (e.target.closest('a')) return;
+    if (e.target.closest('.row')) { openSet.has(id) ? openSet.delete(id) : openSet.add(id); item.classList.toggle('open'); }
+  });
+
+  // ---------- 匯出 CSV（含 BOM，Excel 開啟不亂碼） ----------
+  $('#exportBtn').onclick = () => {
+    if (!ROWS.length) return toast('目前沒有資料');
+    const cell = v => { let s = String(v == null ? '' : v); if (/^[=+\-@]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
+    const lines = [FIELDS.map(f => cell(f[1])).join(',')]
+      .concat(ROWS.map(r => FIELDS.map(([k]) => k === 'phone' ? cell('\t' + r[k]) : cell(r[k])).join(',')));
+    const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    const d = new Date(); const pad = n => String(n).padStart(2,'0');
+    a.href = URL.createObjectURL(blob);
+    a.download = '萬聖節遊街報名_' + d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + '_' + pad(d.getHours()) + pad(d.getMinutes()) + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  };
+
+  function toast(t) {
+    const el = $('#toast'); el.textContent = t; el.classList.remove('hidden'); el.style.opacity = 1;
+    clearTimeout(el._t); el._t = setTimeout(() => { el.style.opacity = 0; setTimeout(() => el.classList.add('hidden'), 300); }, 1800);
+  }
+
+  // ---------- 圖片管理 ----------
+  let IMG_CAT = 'route', IMAGES = [];
+
+  $$('.img-tab').forEach(tab => {
+    tab.onclick = () => {
+      $$('.img-tab').forEach(t => t.classList.remove('on'));
+      tab.classList.add('on');
+      IMG_CAT = tab.dataset.cat;
+      renderImages();
+    };
+  });
+
+  const uploadArea = $('#uploadArea');
+  const fileInput = $('#fileInput');
+  uploadArea.onclick = () => fileInput.click();
+  uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('drag'); });
+  uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag'));
+  uploadArea.addEventListener('drop', e => { e.preventDefault(); uploadArea.classList.remove('drag'); handleFiles(e.dataTransfer.files); });
+  fileInput.addEventListener('change', () => { handleFiles(fileInput.files); fileInput.value = ''; });
+
+  async function handleFiles(files) {
+    for (const file of files) {
+      if (!file.type.startsWith('image/')) { toast('只能上傳圖片檔案'); continue; }
+      if (file.size > 5 * 1024 * 1024) { toast(file.name + ' 超過 5MB，請壓縮後再試'); continue; }
+      uploadArea.classList.add('uploading');
+      try {
+        const base64 = await fileToBase64(file);
+        const res = await api('adminUploadImage', { pw: PW, category: IMG_CAT, fileName: file.name, base64 });
+        if (res.ok && res.image) { IMAGES.push(res.image); renderImages(); toast('✔ 已上傳 ' + file.name); }
+      } catch (err) { toast('上傳失敗：' + (err.message || err)); }
+      uploadArea.classList.remove('uploading');
+    }
+  }
+
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderImages() {
+    const grid = $('#imgGrid');
+    const filtered = IMAGES.filter(i => i.category === IMG_CAT);
+    if (!filtered.length) { grid.innerHTML = '<p style="color:var(--muted);font-size:14px">尚未上傳' + (IMG_CAT === 'route' ? '路線圖' : '禮物圖片') + '</p>'; return; }
+    grid.innerHTML = filtered.map(i =>
+      '<div class="img-card"><img src="' + esc(i.url) + '" alt="' + esc(i.name) + '" loading="lazy">' +
+      '<div class="info">' + esc(i.name) + '</div>' +
+      '<button class="del" data-del="' + esc(i.id) + '" title="刪除">&times;</button></div>'
+    ).join('');
+  }
+
+  $('#imgGrid').addEventListener('click', async e => {
+    const btn = e.target.closest('[data-del]');
+    if (!btn) return;
+    const id = btn.dataset.del;
+    const img = IMAGES.find(i => i.id === id);
+    if (!confirm('確定刪除' + (img ? ' ' + img.name : '') + '？')) return;
+    btn.disabled = true;
+    try {
+      await api('adminDeleteImage', { pw: PW, fileId: id });
+      IMAGES = IMAGES.filter(i => i.id !== id);
+      renderImages();
+      toast('已刪除');
+    } catch (err) { toast('刪除失敗：' + (err.message || err)); btn.disabled = false; }
+  });
+
+  async function loadImages() {
+    try {
+      const res = await api('getImages');
+      IMAGES = (res && res.images) || [];
+      renderImages();
+    } catch (e) {}
+  }
+
+  // 登入成功後也載入圖片（在 apply 後）
+  const origApply = apply;
+  apply = function(data) { origApply(data); loadImages(); };
+
+  // ---------- 預覽用範例資料 ----------
+  function mockImages() {
+    if (!window._mockImgs) window._mockImgs = [
+      { id:'mock_r1', category:'route', name:'遊街路線圖.jpg', url:'https://placehold.co/800x600/ff6600/ffffff?text=🗺️+遊街路線圖', createdAt:'2026-10-18 10:00:00' },
+      { id:'mock_g1', category:'gift', name:'彩色提袋.jpg', url:'https://placehold.co/400x400/9b59b6/ffffff?text=🎁+彩色提袋', createdAt:'2026-10-18 10:01:00' },
+      { id:'mock_g2', category:'gift', name:'黑色提袋.jpg', url:'https://placehold.co/400x400/2c3e50/ffffff?text=🎁+黑色提袋', createdAt:'2026-10-18 10:02:00' },
+    ];
+    return { images: window._mockImgs };
+  }
+  function mockData() {
+    const F = [['id','報名編號'],['createdAt','報名時間'],['name','主要聯絡人'],['phone','聯絡電話'],['email','電子信箱'],['memberType','參加成員'],['totalPeople','總人數'],['petCount','寵物數量'],['source','得知管道'],['note','備註需求'],['adults','大人人數'],['children','兒童人數'],['childAges','兒童年齡'],['hasInfant','嬰幼兒同行'],['needStroller','嬰兒推車'],['kidCostume','小朋友變裝'],['childSafety','兒童安全確認'],['petTypes','寵物種類'],['petNum','毛孩隻數'],['petNames','毛孩名字'],['petSize','毛孩體型'],['petTemper','毛孩外出狀況'],['petMode','參加方式'],['petCostume','毛孩變裝'],['petNote','毛孩注意事項'],['petAgree','毛孩參加提醒'],['timeAgree','時間確認'],['safetyAgree','安全確認'],['privacyAgree','個資告知'],['photoConsent','影像使用'],['checkedIn','已報到'],['checkinTime','報到時間']];
+    if (!window._mock) window._mock = [
+      {id:'H001',createdAt:'2026-10-19 11:02:15',name:'王小明',phone:'0912-345-678',memberType:'親子與寵物一起參加',totalPeople:'3',petCount:'1',source:'什浬鍋 Facebook',adults:'2',children:'1',childAges:'3－5歲',hasInfant:'沒有',needStroller:'不需要',kidCostume:'會，已經準備好了！',childSafety:'已確認',petTypes:'狗狗',petNum:'1隻',petNames:'豆花',petSize:'小型',petTemper:'喜歡與人互動',petMode:'使用牽繩陪走',petCostume:'會，準備好變裝了！',petAgree:'已確認',timeAgree:'已確認',safetyAgree:'已確認',privacyAgree:'已確認',photoConsent:'同意',checkedIn:'',checkinTime:''},
+      {id:'H002',createdAt:'2026-10-19 12:40:03',name:'陳美玲',phone:'0988-111-222',email:'meiling@example.com',memberType:'親子家庭（有小朋友）',totalPeople:'4',petCount:'0',source:'LINE 分享',note:'有一位小朋友需要輪椅通道',adults:'2',children:'2',childAges:'未滿3歲、6－8歲',hasInfant:'有',needStroller:'需要',kidCostume:'還在準備中',childSafety:'已確認',timeAgree:'已確認',safetyAgree:'已確認',privacyAgree:'已確認',photoConsent:'不同意',checkedIn:'',checkinTime:''},
+      {id:'H003',createdAt:'2026-10-20 09:15:44',name:'林大華',phone:'0933-456-789',memberType:'寵物家庭（有攜帶毛孩）',totalPeople:'1',petCount:'2',source:'什浬鍋 Instagram',petTypes:'狗狗、貓咪',petNum:'2隻',petNames:'布丁、黑糖',petSize:'小型、中型',petTemper:'比較慢熟，需要一點時間適應、遇到陌生環境會比較緊張',petMode:'依毛孩狀況搭配牽繩或推車',petCostume:'還在準備中',petNote:'黑糖怕大狗，請避免安排在大型犬旁邊',petAgree:'已確認',timeAgree:'已確認',safetyAgree:'已確認',privacyAgree:'已確認',photoConsent:'同意',checkedIn:'✔',checkinTime:'17:45:12'},
+      {id:'H004',createdAt:'2026-10-21 20:03:10',name:'張雅婷',phone:'0955-000-111',memberType:'一般民眾（沒有攜帶小朋友或寵物）',totalPeople:'2',petCount:'0',source:'親友分享',timeAgree:'已確認',safetyAgree:'已確認',privacyAgree:'已確認',checkedIn:'',checkinTime:''},
+    ];
+    return { rows: window._mock, fields: F, serverTime: new Date().toLocaleString('zh-TW') };
+  }
+})();
+</script>
+</body>
+</html>
