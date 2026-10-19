@@ -20,6 +20,163 @@ body{margin:0;font-family:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","
   background-image:radial-gradient(circle at 85% -10%,#ff8a1f33 0,transparent 40%),
                    radial-gradient(circle at 0% 30%,#6b3fa033 0,transparent 45%);
   background-attachment:fixed;min-height:100vh}
+
+/* ==================== 邀請函封面 ==================== */
+.invite-screen{
+  position:fixed;inset:0;z-index:200;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:#1a0e28;
+  background-image:
+    radial-gradient(circle at 50% 40%,#2d1b4e66 0,transparent 60%),
+    radial-gradient(circle at 80% 80%,#ff8a1f10 0,transparent 40%);
+  overflow:hidden;
+  transition:opacity .6s ease,visibility .6s ease;
+}
+.invite-screen.hide{opacity:0;visibility:hidden;pointer-events:none}
+
+/* 飄浮的可愛小鬼們 */
+.invite-screen .spooky{position:absolute;font-size:32px;opacity:.45;animation:spookyFloat 5s ease-in-out infinite;pointer-events:none}
+.s1{left:8%;top:15%;animation-delay:0s}.s2{right:10%;top:10%;animation-delay:-1.5s;font-size:28px}
+.s3{left:5%;bottom:20%;animation-delay:-3s;font-size:24px}.s4{right:12%;bottom:25%;animation-delay:-2s;font-size:36px}
+.s5{left:45%;top:8%;animation-delay:-4s;font-size:20px}.s6{right:30%;bottom:12%;animation-delay:-.8s;font-size:22px}
+.s7{left:20%;top:55%;animation-delay:-2.5s;font-size:18px}.s8{right:5%;top:45%;animation-delay:-3.5s;font-size:26px}
+@keyframes spookyFloat{
+  0%,100%{transform:translateY(0) rotate(0deg)}
+  25%{transform:translateY(-14px) rotate(-5deg)}
+  50%{transform:translateY(-6px) rotate(3deg)}
+  75%{transform:translateY(-18px) rotate(-3deg)}
+}
+
+/* ---- 四瓣信封 ---- */
+.envelope-wrap{
+  position:relative;width:360px;max-width:90vw;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+/* 信封底（可見的矩形） */
+.envelope{
+  position:relative;
+  width:100%;aspect-ratio:4/3;
+  background:linear-gradient(145deg,#2e1d48,#231538);
+  border:2px solid #4a3568;
+  border-radius:16px;
+  box-shadow:0 24px 64px rgba(0,0,0,.55),0 0 80px #ff8a1f08;
+  overflow:hidden;
+  transition:transform .4s ease;
+}
+.envelope:hover{transform:translateY(-3px)}
+
+/* 四瓣用 SVG 疊在信封上 */
+.env-flaps{position:absolute;inset:0;z-index:2;pointer-events:none}
+.env-flaps svg{width:100%;height:100%;display:block}
+
+/* 上蓋（可掀開） */
+.flap-top{
+  transform-origin:50% 0%;
+  transition:transform .65s cubic-bezier(.4,.0,.2,1);
+}
+.envelope.opened .flap-top{transform:rotateX(180deg)}
+
+/* 左右底瓣（靜態裝飾） */
+.flap-left,.flap-right,.flap-bottom{opacity:.85}
+
+/* 虛線邊飾 */
+.env-stitch{
+  position:absolute;inset:8px;border:2px dashed #5a4070;border-radius:12px;
+  pointer-events:none;z-index:1;opacity:.4;
+}
+
+/* 四角小裝飾 */
+.env-corner{position:absolute;font-size:20px;z-index:3;pointer-events:none;opacity:.7}
+.env-corner.tl{top:10px;left:12px}.env-corner.tr{top:10px;right:12px}
+.env-corner.bl{bottom:10px;left:12px}.env-corner.br{bottom:10px;right:12px}
+
+/* 封蠟印章（置中） */
+.seal{
+  position:absolute;top:50%;left:50%;z-index:4;
+  transform:translate(-50%,-50%);
+  width:80px;height:80px;border-radius:50%;
+  background:radial-gradient(circle at 38% 35%,#ff7a1a,#cc3300 80%);
+  box-shadow:0 4px 20px rgba(0,0,0,.5),inset 0 2px 4px rgba(255,200,100,.3),inset 0 -3px 6px rgba(0,0,0,.35);
+  display:grid;place-items:center;
+  font-size:40px;
+  border:3px solid #ff9a4488;
+  transition:transform .5s ease .15s,opacity .4s ease .25s;
+}
+.envelope.opened .seal{transform:translate(-50%,-50%) scale(.4);opacity:0}
+
+/* 信封下方文字（活動名稱） */
+.env-title{
+  position:absolute;bottom:0;left:0;right:0;z-index:3;
+  text-align:center;padding:0 20px 18px;
+  pointer-events:none;
+}
+.env-title h2{
+  font-size:22px;font-weight:900;margin:0;letter-spacing:.05em;
+  color:var(--orange);
+}
+.env-title .sub{
+  font-size:14px;color:#bfaed6;margin:4px 0 0;letter-spacing:.1em;
+}
+
+/* 點擊提示 */
+.env-tap{
+  text-align:center;margin-top:20px;
+  color:#ff8a1f;font-size:15px;font-weight:700;
+  animation:tapPulse 2s ease-in-out infinite;
+}
+@keyframes tapPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.05)}}
+
+/* ---- 信紙彈出（整個覆蓋信封） ---- */
+.letter-overlay{
+  position:absolute;inset:0;z-index:10;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(170deg,#f8f2e8,#efe5d5);
+  border-radius:14px;
+  padding:20px 18px;
+  text-align:center;
+  opacity:0;transform:translateY(30px) scale(.92);
+  pointer-events:none;
+  transition:opacity .5s ease .5s,transform .5s cubic-bezier(.22,.68,.36,1) .5s;
+}
+.envelope.opened .letter-overlay{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
+.letter-overlay h3{
+  font-size:18px;margin:0 0 6px;color:#2a1840;font-weight:900;
+}
+.letter-overlay p{
+  font-size:13px;margin:0 0 14px;color:#5a4a6a;line-height:1.6;
+}
+.letter-overlay .start-btn{
+  display:inline-block;
+  padding:11px 28px;border:none;border-radius:12px;
+  background:linear-gradient(135deg,#ff8a1f,#ff5500);
+  color:#fff;font-size:14px;font-weight:700;
+  cursor:pointer;box-shadow:0 6px 20px #ff8a1f55;
+  transition:transform .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.letter-overlay .start-btn:active{transform:scale(.95)}
+
+/* 音樂控制 */
+.music-btn{
+  position:fixed;top:12px;right:12px;z-index:210;
+  width:40px;height:40px;border-radius:50%;border:1.5px solid #5a407088;
+  background:rgba(30,18,50,.8);backdrop-filter:blur(6px);
+  color:#ffb347;font-size:18px;cursor:pointer;
+  display:none;place-items:center;
+  transition:transform .15s,opacity .3s;
+  -webkit-tap-highlight-color:transparent;
+}
+.music-btn.show{display:grid}
+.music-btn:active{transform:scale(.9)}
+.music-btn.off{opacity:.5}
+
+@media (prefers-reduced-motion:reduce){
+  .invite-screen .spooky{animation:none}
+  .flap-top,.seal,.letter-overlay,.envelope,.invite-screen{transition-duration:.01s!important}
+  .env-tap{animation:none!important}
+}
+
+/* ==================== 主表單區域 ==================== */
 .wrap{max-width:680px;margin:0 auto;padding:16px 16px 120px}
 
 /* Hero */
@@ -137,6 +294,63 @@ footer{text-align:center;color:#8a7aa3;font-size:12.5px;margin-top:32px}
 </style>
 </head>
 <body>
+
+<!-- 背景音樂 -->
+<audio id="bgm" loop preload="none"></audio>
+<button class="music-btn" id="musicBtn" title="音樂開關">🔊</button>
+
+<!-- ==================== 邀請函封面 ==================== -->
+<div class="invite-screen" id="inviteScreen">
+  <!-- 飄浮的可愛小鬼 -->
+  <span class="spooky s1" aria-hidden="true">👻</span>
+  <span class="spooky s2" aria-hidden="true">🦇</span>
+  <span class="spooky s3" aria-hidden="true">🕷️</span>
+  <span class="spooky s4" aria-hidden="true">🦇</span>
+  <span class="spooky s5" aria-hidden="true">💀</span>
+  <span class="spooky s6" aria-hidden="true">👻</span>
+  <span class="spooky s7" aria-hidden="true">🕸️</span>
+  <span class="spooky s8" aria-hidden="true">🎃</span>
+
+  <div class="envelope-wrap" id="envelopeWrap">
+    <div class="envelope" id="envelope">
+      <!-- 虛線邊飾 -->
+      <div class="env-stitch"></div>
+
+      <!-- 四角可愛裝飾 -->
+      <span class="env-corner tl">🕷️</span>
+      <span class="env-corner tr">🦇</span>
+      <span class="env-corner bl">🍬</span>
+      <span class="env-corner br">👻</span>
+
+      <!-- 四瓣折口 SVG -->
+      <div class="env-flaps">
+        <svg viewBox="0 0 400 300" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- 左瓣 -->
+          <polygon class="flap-left" points="0,0 200,150 0,300" fill="#3a2858"/>
+          <!-- 右瓣 -->
+          <polygon class="flap-right" points="400,0 200,150 400,300" fill="#3a2858"/>
+          <!-- 下瓣 -->
+          <polygon class="flap-bottom" points="0,300 200,150 400,300" fill="#352350"/>
+          <!-- 上蓋 -->
+          <polygon class="flap-top" points="0,0 200,150 400,0" fill="#4a3470" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,.3))"/>
+        </svg>
+      </div>
+
+      <!-- 封蠟印章 -->
+      <div class="seal">🎃</div>
+
+      <!-- 信封底部活動名稱 -->
+      <div class="env-title">
+        <h2>什浬鍋萬聖節</h2>
+        <p class="sub">✦ 親子遊街活動 ✦</p>
+      </div>
+
+    </div>
+    <p class="env-tap">👆 點擊打開邀請函</p>
+  </div>
+</div>
+
+<!-- ==================== 主表單 ==================== -->
 <div class="wrap" id="app">
 
   <header class="hero">
@@ -150,27 +364,19 @@ footer{text-align:center;color:#8a7aa3;font-size:12.5px;margin-top:32px}
     <p class="intro">換上可愛、搞怪的萬聖節裝扮，走訪麥寮在地商家，和大小朋友、毛孩們一起讓麥寮街道充滿歡笑與回憶！🧡</p>
   </header>
 
-  <section class="card">
-    <dl class="info">
-      <dt>📅 日期</dt><dd>115年10月30日（星期五）</dd>
-      <dt>📍 集合</dt><dd>什浬鍋停車場<br><small>雲林縣麥寮鄉中山路409號</small></dd>
-      <dt>⏰ 報到</dt><dd>17:40－18:00</dd>
-      <dt>🚶 出發</dt><dd>18:10 準時出發</dd>
-      <dt>👨‍👩‍👧 對象</dt><dd>親子家庭、寵物家庭及一般民眾</dd>
+  <section class="card" id="eventInfoCard">
+    <dl class="info" id="eventInfoDl">
+      <dt>📅 日期</dt><dd id="evDate">載入中…</dd>
+      <dt>📍 集合</dt><dd id="evLocation">載入中…</dd>
+      <dt>⏰ 報到</dt><dd id="evCheckinTime">載入中…</dd>
+      <dt>🚶 出發</dt><dd id="evDepartTime">載入中…</dd>
+      <dt>👨‍👩‍👧 對象</dt><dd id="evAudience">載入中…</dd>
     </dl>
   </section>
 
-  <details class="card notice">
+  <details class="card notice" id="eventNotice">
     <summary>📌 報到與參加須知</summary>
-    <ol>
-      <li>請於 17:40－18:00 至什浬鍋停車場完成報到，隊伍預計於 18:10 準時出發。</li>
-      <li>若因故晚到，請直接至什浬鍋店內櫃檯報到，由工作人員協助確認後續參與方式，請勿自行追趕遊街隊伍。</li>
-      <li>兒童須由家長或法定監護人全程陪同，不可自行離隊。</li>
-      <li>歡迎毛孩一起參加！請飼主依毛孩的個性準備合適的牽繩或推車。</li>
-      <li>活動期間請飼主全程照顧毛孩，留意毛孩情緒及周遭人車安全，並自行清理排泄物。</li>
-      <li>請所有參加者配合工作人員及交通引導人員的指示，共同維護活動安全。</li>
-      <li>如遇天候或其他不可抗力因素，活動安排若有異動，將另行通知。</li>
-    </ol>
+    <ol id="eventRules"><li>載入中…</li></ol>
   </details>
 
   <!-- 遊街路線 -->
@@ -204,10 +410,10 @@ footer{text-align:center;color:#8a7aa3;font-size:12.5px;margin-top:32px}
           <div class="err">請填寫正確的電話號碼</div>
         </div>
         <div class="field" data-req="email" data-name="email">
-          <label class="label" for="email">電子信箱<span class="opt">選填</span></label>
-          <p class="hint">如有活動異動或重要通知，可提供電子信箱供聯繫</p>
+          <label class="label" for="email">電子信箱<span class="req">必填</span></label>
+          <p class="hint">活動異動或重要通知將寄送至此信箱</p>
           <input type="email" id="email" name="email" maxlength="100" inputmode="email" autocomplete="email" placeholder="name@example.com">
-          <div class="err">電子信箱格式不正確</div>
+          <div class="err">請填寫正確的電子信箱</div>
         </div>
         <div class="field" data-req="radio" data-name="memberType">
           <span class="label">本次參加活動的成員有哪些？<span class="req">必填</span></span>
@@ -402,11 +608,11 @@ footer{text-align:center;color:#8a7aa3;font-size:12.5px;margin-top:32px}
       <div id="qrWrap" style="margin:16px auto 8px;background:#fff;padding:12px;border-radius:12px;display:inline-block"></div>
       <small>📱 請截圖保存 QR code，報到時出示即可快速報到</small>
     </div>
-    <div class="card">
-      <p style="margin:0 0 8px">📍 請於 <b>10/30（五）17:40－18:00</b> 至<b>什浬鍋停車場</b>報到，18:10 準時出發！</p>
-      <p style="margin:0;color:var(--muted)">如果會晚到，請至什浬鍋店內櫃檯報到，由工作人員協助確認後續參加方式。</p>
+    <div class="card" id="doneEventInfo">
+      <p style="margin:0 0 8px">📍 載入活動資訊中…</p>
     </div>
     <p style="font-size:18px">期待大小朋友與毛孩們一起讓麥寮的萬聖節更加熱鬧！👻🧡</p>
+    <button onclick="location.reload()" style="margin-top:16px;padding:14px 32px;border:none;border-radius:12px;background:var(--orange);color:#1a0f00;font-size:16px;font-weight:700;cursor:pointer">🏠 返回首頁</button>
   </div>
 </template>
 
@@ -415,10 +621,7 @@ footer{text-align:center;color:#8a7aa3;font-size:12.5px;margin-top:32px}
   'use strict';
 
   // ====================================================
-  // ★★★ 部署後請把下面的網址換成你的 Apps Script 部署網址 ★★★
-  // ====================================================
   const API_URL = 'https://script.google.com/macros/s/AKfycbySRgwJflpUq4JCQWh9XHaJIBtZkRHMSnbPkWsySuvZjlRvLREdMsplCuL7kwc_OQmT/exec';
-  // 例如：const API_URL = 'https://script.google.com/macros/s/AKfycbx.../exec';
   // ====================================================
 
   const KIDS = ['親子家庭（有小朋友）','親子與寵物一起參加'];
@@ -429,6 +632,86 @@ footer{text-align:center;color:#8a7aa3;font-size:12.5px;margin-top:32px}
   const form = $('#form');
 
   if (IS_PREVIEW) { const t = document.createElement('div'); t.className = 'preview-tag'; t.textContent = '預覽模式'; document.body.appendChild(t); }
+
+  // ==================== 背景音樂 ====================
+  var bgm = $('#bgm');
+  var musicBtn = $('#musicBtn');
+  var musicPlaying = false;
+
+  // ==================== 載入活動資訊 ====================
+  var _eventInfo = null;
+  function escHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+  api('getEventInfo').then(function(res) {
+    if (!res) return;
+    _eventInfo = res;
+    // 填入活動資訊卡
+    var dd = function(id, val) { var el = document.getElementById(id); if (el && val) el.textContent = val; };
+    dd('evDate', res.date);
+    var locEl = document.getElementById('evLocation');
+    if (locEl) locEl.innerHTML = escHtml(res.location || '') + (res.address ? '<br><small>' + escHtml(res.address) + '</small>' : '');
+    dd('evCheckinTime', res.checkinTime);
+    dd('evDepartTime', res.departTime);
+    dd('evAudience', res.audience);
+    // 填入須知
+    var ol = document.getElementById('eventRules');
+    if (ol && res.rules && res.rules.length) {
+      ol.innerHTML = res.rules.map(function(r) { return '<li>' + escHtml(r) + '</li>'; }).join('');
+    }
+  }).catch(function(){});
+
+  // 從後端取得音樂連結
+  api('getMusic').then(function(res) {
+    if (res && res.url) {
+      bgm.src = res.url;
+      musicBtn.classList.add('show');
+    }
+  }).catch(function(){});
+
+  function playMusic() {
+    if (!bgm.src || musicPlaying) return;
+    bgm.volume = 0.4;
+    bgm.play().then(function() {
+      musicPlaying = true;
+      musicBtn.textContent = '🔊';
+      musicBtn.classList.remove('off');
+    }).catch(function(){});
+  }
+  function toggleMusic() {
+    if (!bgm.src) return;
+    if (musicPlaying) {
+      bgm.pause();
+      musicPlaying = false;
+      musicBtn.textContent = '🔇';
+      musicBtn.classList.add('off');
+    } else {
+      bgm.play().then(function() {
+        musicPlaying = true;
+        musicBtn.textContent = '🔊';
+        musicBtn.classList.remove('off');
+      }).catch(function(){});
+    }
+  }
+  musicBtn.addEventListener('click', function(e) { e.stopPropagation(); toggleMusic(); });
+
+  // ==================== 邀請函互動 ====================
+  var envelopeOpened = false;
+  var envelope = $('#envelope');
+  var inviteScreen = $('#inviteScreen');
+
+  // 點擊信封 → 打開動畫 → 直接進入報名表
+  $('#envelopeWrap').addEventListener('click', function(e) {
+    if (envelopeOpened) return;
+    envelopeOpened = true;
+    envelope.classList.add('opened');
+    // 觸發音樂
+    playMusic();
+    // 動畫結束後直接進入報名表
+    setTimeout(function() {
+      inviteScreen.classList.add('hide');
+      document.body.style.overflow = '';
+      window.scrollTo({ top: 0 });
+    }, 900);
+  });
 
   // 產生選項
   $$('.choices[data-options]').forEach(box => {
@@ -518,7 +801,7 @@ footer{text-align:center;color:#8a7aa3;font-size:12.5px;margin-top:32px}
     switch (kind) {
       case 'text': ok = !!val(); break;
       case 'phone': { const v = val(); ok = /^[\d\s+\-()#]+$/.test(v) && (v.match(/\d/g) || []).length >= 8; break; }
-      case 'email': { const v = val(); ok = !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); break; }
+      case 'email': { const v = val(); ok = !!v && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); break; }
       case 'int1': { const v = val(); ok = /^\d+$/.test(v) && +v >= 1 && +v <= 50; break; }
       case 'int0': {
         const v = val(); const type = (form.querySelector('input[name=memberType]:checked') || {}).value;
@@ -582,13 +865,20 @@ footer{text-align:center;color:#8a7aa3;font-size:12.5px;margin-top:32px}
   function done(id) {
     const node = $('#doneTpl').content.cloneNode(true);
     node.querySelector('[data-id]').textContent = id;
+    // 動態填入報名完成的活動資訊
+    const doneInfo = node.querySelector('#doneEventInfo');
+    if (doneInfo && _eventInfo) {
+      var ei = _eventInfo;
+      doneInfo.innerHTML = '<p style="margin:0 0 8px">📍 請於 <b>' + escHtml(ei.date || '') + ' ' + escHtml(ei.checkinTime || '') + '</b> 至<b>' + escHtml(ei.location || '') + '</b>報到，' + escHtml(ei.departTime || '') + '！</p>'
+        + '<p style="margin:0;color:var(--muted)">如果會晚到，請至' + escHtml(ei.location || '什浬鍋') + '店內櫃檯報到，由工作人員協助確認後續參加方式。</p>';
+    }
     const app = $('#app');
     app.innerHTML = '';
     app.appendChild(node);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    // 產生 QR code
+    // 產生 QR code（指向 scan.html）
     const base = location.href.replace(/\/[^\/]*$/, '/');
-    const url = base + 'checkin.html?id=' + encodeURIComponent(id);
+    const url = base + 'scan.html?id=' + encodeURIComponent(id);
     const wrap = document.getElementById('qrWrap');
     if (wrap && typeof QRCode !== 'undefined') {
       new QRCode(wrap, { text: url, width: 180, height: 180, colorDark: '#1a1a2e', colorLight: '#ffffff' });
