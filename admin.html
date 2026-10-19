@@ -32,6 +32,14 @@ button,input{font:inherit}
 .top h1{font-size:20px;margin:0;flex:1;min-width:200px}
 .top h1 small{display:block;font-size:12.5px;color:var(--muted);font-weight:400}
 
+/* Main Tabs */
+.main-tabs{display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid var(--line)}
+.main-tab{appearance:none;border:none;background:transparent;color:var(--muted);padding:12px 22px;font-size:15px;font-weight:700;cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;font-family:inherit}
+.main-tab:hover{color:var(--text)}
+.main-tab.on{color:var(--orange);border-bottom-color:var(--orange)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
 /* Stats */
 .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:16px}
 .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
@@ -77,9 +85,12 @@ button,input{font:inherit}
 .detail a{color:var(--blue)}
 .empty{text-align:center;color:var(--muted);padding:40px 0}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#000c;color:#fff;padding:10px 18px;border-radius:99px;font-size:14px;z-index:20;transition:opacity .3s}
+/* Settings sections */
+.set-sec{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px}
+.set-sec h2{font-size:18px;margin:0 0 12px}
+.set-sec .desc{color:var(--muted);font-size:13px;margin:0 0 14px}
+.field-label{display:block;color:var(--muted);font-size:13px;margin-bottom:3px}
 /* Image Manager */
-.img-sec{margin-top:24px;border-top:1px solid var(--line);padding-top:20px}
-.img-sec h2{font-size:18px;margin:0 0 12px}
 .img-tabs{display:flex;gap:6px;margin-bottom:12px}
 .img-tab{border:1.5px solid var(--line);background:transparent;color:var(--muted);padding:8px 16px;border-radius:99px;cursor:pointer;font-size:14px;font-weight:700}
 .img-tab.on{background:var(--orange);border-color:var(--orange);color:#1a0f00}
@@ -96,7 +107,7 @@ button,input{font:inherit}
 .img-card .del:hover{background:var(--red)}
 .uploading{opacity:.5;pointer-events:none}
 .preview-tag{position:fixed;top:8px;right:8px;background:#ffb347;color:#1a0f00;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;z-index:30}
-@media (max-width:600px){.detail dl{grid-template-columns:1fr}.detail dt{margin-top:6px}.top .btn{flex:1}}
+@media (max-width:600px){.detail dl{grid-template-columns:1fr}.detail dt{margin-top:6px}.top .btn{flex:1}.main-tab{padding:10px 14px;font-size:14px}}
 </style>
 </head>
 <body>
@@ -115,76 +126,88 @@ button,input{font:inherit}
 
   <div id="mainView" class="hidden">
     <div class="top">
-      <h1>🎃 萬聖節遊街｜報名管理<small id="updated">—</small></h1>
+      <h1>🎃 萬聖節遊街｜後台管理<small id="updated">—</small></h1>
       <button class="btn" id="refreshBtn">🔄 重新整理</button>
-      <button class="btn" id="exportBtn">⬇️ 匯出 Excel (CSV)</button>
       <button class="btn" id="logoutBtn">登出</button>
     </div>
 
-    <div class="stats" id="stats"></div>
-
-    <div class="tools">
-      <input class="search" id="q" type="search" placeholder="搜尋姓名、電話、編號、毛孩名字…">
-      <div class="chips" id="chips"></div>
-    </div>
-    <p class="count" id="count"></p>
-    <div class="list" id="list"></div>
-
-    <!-- 活動資訊設定 -->
-    <div class="img-sec">
-      <h2>📋 活動資訊設定</h2>
-      <p style="color:var(--muted);font-size:13px;margin:0 0 12px">修改後前台報名頁面會即時更新顯示</p>
-      <div style="display:grid;gap:10px">
-        <div><label style="display:block;color:var(--muted);font-size:13px;margin-bottom:3px">📅 活動日期</label>
-          <input type="text" id="evDate" class="search" placeholder="例：115年10月30日（星期五）"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div><label style="display:block;color:var(--muted);font-size:13px;margin-bottom:3px">📍 集合地點</label>
-            <input type="text" id="evLocation" class="search" placeholder="例：什浬鍋停車場"></div>
-          <div><label style="display:block;color:var(--muted);font-size:13px;margin-bottom:3px">📍 地址</label>
-            <input type="text" id="evAddress" class="search" placeholder="例：雲林縣麥寮鄉中山路409號"></div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div><label style="display:block;color:var(--muted);font-size:13px;margin-bottom:3px">⏰ 報到時間</label>
-            <input type="text" id="evCheckinTime" class="search" placeholder="例：17:40－18:00"></div>
-          <div><label style="display:block;color:var(--muted);font-size:13px;margin-bottom:3px">🚶 出發時間</label>
-            <input type="text" id="evDepartTime" class="search" placeholder="例：18:10 準時出發"></div>
-        </div>
-        <div><label style="display:block;color:var(--muted);font-size:13px;margin-bottom:3px">👨‍👩‍👧 活動對象</label>
-          <input type="text" id="evAudience" class="search" placeholder="例：親子家庭、寵物家庭及一般民眾"></div>
-        <div><label style="display:block;color:var(--muted);font-size:13px;margin-bottom:3px">📌 報到與參加須知（每行一條）</label>
-          <textarea id="evRules" class="search" style="min-height:160px;resize:vertical;line-height:1.6" placeholder="每行輸入一條須知..."></textarea></div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn primary" id="saveEventBtn" style="flex:none">💾 儲存活動資訊</button>
-          <span style="color:var(--muted);font-size:13px" id="eventStatus">載入中…</span>
-        </div>
-      </div>
+    <!-- ===== 主分頁 ===== -->
+    <div class="main-tabs">
+      <button class="main-tab on" data-tab="reg">📋 報名管理</button>
+      <button class="main-tab" data-tab="settings">⚙️ 後台設定</button>
     </div>
 
-    <!-- 音樂管理 -->
-    <div class="img-sec">
-      <h2>🎵 背景音樂設定</h2>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
-        <input type="text" id="musicUrl" class="search" style="min-width:0;flex:1" placeholder="音樂檔案網址（例如：https://你的GitHub/halloween/bgm.mp3）">
-        <button class="btn primary" id="saveMusicBtn" style="flex:none">💾 儲存</button>
+    <!-- ===== 分頁1：報名管理 ===== -->
+    <div class="tab-panel active" id="tabReg">
+      <div class="stats" id="stats"></div>
+      <div class="tools">
+        <input class="search" id="q" type="search" placeholder="搜尋姓名、電話、編號、毛孩名字…">
+        <div class="chips" id="chips"></div>
       </div>
-      <p style="color:var(--muted);font-size:13px;margin:0 0 4px" id="musicStatus">載入中…</p>
-      <p style="color:var(--muted);font-size:12.5px;margin:0">💡 將 mp3 檔案上傳到 GitHub 倉庫，網址格式為 https://shihlistone-beep.github.io/halloween/檔名.mp3</p>
+      <p class="count" id="count"></p>
+      <div style="margin-bottom:12px"><button class="btn" id="exportBtn">⬇️ 匯出 Excel (CSV)</button></div>
+      <div class="list" id="list"></div>
     </div>
 
-    <!-- 圖片管理 -->
-    <div class="img-sec">
-      <h2>🖼️ 前端圖片管理</h2>
-      <div class="img-tabs">
-        <button class="img-tab on" data-cat="route">🗺️ 遊街路線圖</button>
-        <button class="img-tab" data-cat="gift">🎁 活動禮物</button>
+    <!-- ===== 分頁2：後台設定 ===== -->
+    <div class="tab-panel" id="tabSettings">
+
+      <!-- 活動資訊設定 -->
+      <div class="set-sec">
+        <h2>📋 活動資訊設定</h2>
+        <p class="desc">修改後前台報名頁面會即時更新顯示</p>
+        <div style="display:grid;gap:10px">
+          <div><label class="field-label">📅 活動日期</label>
+            <input type="text" id="evDate" class="search" placeholder="例：115年10月30日（星期五）"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div><label class="field-label">📍 集合地點</label>
+              <input type="text" id="evLocation" class="search" placeholder="例：什浬鍋停車場"></div>
+            <div><label class="field-label">📍 地址</label>
+              <input type="text" id="evAddress" class="search" placeholder="例：雲林縣麥寮鄉中山路409號"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div><label class="field-label">⏰ 報到時間</label>
+              <input type="text" id="evCheckinTime" class="search" placeholder="例：17:40－18:00"></div>
+            <div><label class="field-label">🚶 出發時間</label>
+              <input type="text" id="evDepartTime" class="search" placeholder="例：18:10 準時出發"></div>
+          </div>
+          <div><label class="field-label">👨‍👩‍👧 活動對象</label>
+            <input type="text" id="evAudience" class="search" placeholder="例：親子家庭、寵物家庭及一般民眾"></div>
+          <div><label class="field-label">📌 報到與參加須知（每行一條）</label>
+            <textarea id="evRules" class="search" style="min-height:320px;resize:vertical;line-height:1.7;font-size:14px" placeholder="每行輸入一條須知&#10;例如：&#10;請於 17:40－18:00 至什浬鍋停車場完成報到&#10;兒童須由家長全程陪同，不可自行離隊"></textarea></div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn primary" id="saveEventBtn" style="flex:none">💾 儲存活動資訊</button>
+            <span style="color:var(--muted);font-size:13px" id="eventStatus">載入中…</span>
+          </div>
+        </div>
       </div>
-      <div class="upload-area" id="uploadArea">
-        <input type="file" id="fileInput" accept="image/*" multiple>
-        <div class="icon">📤</div>
-        <p><b>點擊選擇圖片</b>或拖拽到這裡</p>
-        <p>支援 JPG / PNG / WebP，每張建議 2MB 以內</p>
+
+      <!-- 音樂管理 -->
+      <div class="set-sec">
+        <h2>🎵 背景音樂設定</h2>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px">
+          <input type="text" id="musicUrl" class="search" style="min-width:0;flex:1" placeholder="音樂檔案網址（例如：https://你的GitHub/halloween/bgm.mp3）">
+          <button class="btn primary" id="saveMusicBtn" style="flex:none">💾 儲存</button>
+        </div>
+        <p style="color:var(--muted);font-size:13px;margin:0 0 4px" id="musicStatus">載入中…</p>
+        <p style="color:var(--muted);font-size:12.5px;margin:0">💡 將 mp3 檔案上傳到 GitHub 倉庫，網址格式為 https://shihlistone-beep.github.io/halloween/檔名.mp3</p>
       </div>
-      <div class="img-grid" id="imgGrid"></div>
+
+      <!-- 圖片管理 -->
+      <div class="set-sec">
+        <h2>🖼️ 前端圖片管理</h2>
+        <div class="img-tabs">
+          <button class="img-tab on" data-cat="route">🗺️ 遊街路線圖</button>
+          <button class="img-tab" data-cat="gift">🎁 活動禮物</button>
+        </div>
+        <div class="upload-area" id="uploadArea">
+          <input type="file" id="fileInput" accept="image/*" multiple>
+          <div class="icon">📤</div>
+          <p><b>點擊選擇圖片</b>或拖拽到這裡</p>
+          <p>支援 JPG / PNG / WebP，每張建議 2MB 以內</p>
+        </div>
+        <div class="img-grid" id="imgGrid"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -198,7 +221,6 @@ button,input{font:inherit}
   // ★★★ 部署後請把下面的網址換成你的 Apps Script 部署網址 ★★★
   // ====================================================
   const API_URL = 'https://script.google.com/macros/s/AKfycbySRgwJflpUq4JCQWh9XHaJIBtZkRHMSnbPkWsySuvZjlRvLREdMsplCuL7kwc_OQmT/exec';
-  // 例如：const API_URL = 'https://script.google.com/macros/s/AKfycbx.../exec';
   // ====================================================
 
   const IS_PREVIEW = !API_URL;
@@ -212,6 +234,17 @@ button,input{font:inherit}
   };
 
   if (IS_PREVIEW) { const t = document.createElement('div'); t.className = 'preview-tag'; t.textContent = '預覽模式・範例資料'; document.body.appendChild(t); }
+
+  // ---------- 主分頁切換 ----------
+  $$('.main-tab').forEach(tab => {
+    tab.onclick = () => {
+      $$('.main-tab').forEach(t => t.classList.remove('on'));
+      tab.classList.add('on');
+      $$('.tab-panel').forEach(p => p.classList.remove('active'));
+      const target = tab.dataset.tab === 'reg' ? '#tabReg' : '#tabSettings';
+      $(target).classList.add('active');
+    };
+  });
 
   // ---------- 後端呼叫 ----------
   async function api(action, payload) {
@@ -499,7 +532,7 @@ button,input{font:inherit}
         $('#evRules').value = (res.rules || []).join('\n');
         $('#eventStatus').textContent = '✅ 已載入目前設定';
       }
-    } catch (e) { $('#eventStatus').textContent = '載入失敗'; }
+    } catch (e) { $('#eventStatus').textContent = '⚠️ 載入失敗（請確認 Code.gs 已部署新版本）'; }
   }
   $('#saveEventBtn').addEventListener('click', async () => {
     const data = {
@@ -540,7 +573,7 @@ button,input{font:inherit}
     $('#saveMusicBtn').disabled = false;
   });
 
-  // 登入成功後也載入圖片和音樂（在 apply 後）
+  // 登入成功後也載入圖片、音樂、活動資訊
   const origApply = apply;
   apply = function(data) { origApply(data); loadImages(); loadMusic(); loadEventInfo(); };
 
