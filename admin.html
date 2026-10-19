@@ -156,7 +156,7 @@ button,input{font:inherit}
   // ====================================================
   // ★★★ 部署後請把下面的網址換成你的 Apps Script 部署網址 ★★★
   // ====================================================
-  const API_URL = 'https://script.google.com/macros/s/AKfycbyMe7vJdqTxwV8W8jsk7_LCB9iDOkAYu1WHr0Yo4Kzq_QWyeeyJ68eoE2oa8WbO8E2P/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbySRgwJflpUq4JCQWh9XHaJIBtZkRHMSnbPkWsySuvZjlRvLREdMsplCuL7kwc_OQmT/exec';
   // 例如：const API_URL = 'https://script.google.com/macros/s/AKfycbx.../exec';
   // ====================================================
 
@@ -181,6 +181,7 @@ button,input{font:inherit}
       if (action === 'getImages') return mockImages();
       if (action === 'adminUploadImage') { const img = { id:'mock_'+Date.now(), category:payload.category, name:payload.fileName, url:'https://placehold.co/400x400/e67e22/fff?text='+encodeURIComponent(payload.fileName), createdAt:new Date().toLocaleString('zh-TW') }; window._mockImgs.push(img); return { ok:true, image:img }; }
       if (action === 'adminDeleteImage') { window._mockImgs = window._mockImgs.filter(i=>i.id!==payload.fileId); return { ok:true }; }
+      if (action === 'adminDeleteRegistration') { window._mock = window._mock.filter(r=>r.id!==payload.id); return { ok:true, id:payload.id }; }
       return {};
     }
     const res = await fetch(API_URL, {
@@ -306,7 +307,7 @@ button,input{font:inherit}
         '<div class="row"><div class="id">' + esc(r.id) + '</div>' +
         '<div class="main"><div class="n">' + esc(r.name) + '</div><div class="p">' + esc(r.phone) + (isIn(r) ? '・' + esc(r.checkinTime) + ' 報到' : '') + '</div><div class="badges">' + badges.join('') + '</div></div>' +
         '<button class="ck' + (isIn(r) ? ' on' : '') + '" data-ck>' + (isIn(r) ? '✔ 已報到' : '報到') + '</button></div>' +
-        '<div class="detail"><dl>' + det + '</dl></div></div>';
+        '<div class="detail"><dl>' + det + '</dl><div style="margin-top:12px;text-align:right"><button class="btn" style="color:var(--red);border-color:var(--red);font-size:13px;padding:6px 14px" data-delete="' + esc(r.id) + '">🗑️ 刪除此報名</button></div></div></div>';
     }).join('');
   }
 
@@ -325,6 +326,21 @@ button,input{font:inherit}
         renderStats(); renderChips(); renderList();
         toast(next ? '✔ ' + r.name + ' 已報到' : '已取消報到');
       } catch (err) { btn.disabled = false; toast('失敗：' + ((err && err.message) || err)); }
+      return;
+    }
+    if (e.target.closest('[data-delete]')) {
+      const delBtn = e.target.closest('[data-delete]');
+      const delId = delBtn.dataset.delete;
+      const delR = ROWS.find(x => x.id === delId);
+      if (!confirm('⚠️ 確定要刪除 ' + delId + ' ' + (delR ? delR.name : '') + ' 的報名？\n\n此操作無法復原！')) return;
+      delBtn.disabled = true;
+      try {
+        await api('adminDeleteRegistration', { pw: PW, id: delId });
+        ROWS = ROWS.filter(x => x.id !== delId);
+        openSet.delete(delId);
+        renderStats(); renderChips(); renderList();
+        toast('🗑️ 已刪除 ' + delId + (delR ? ' ' + delR.name : ''));
+      } catch (err) { delBtn.disabled = false; toast('刪除失敗：' + ((err && err.message) || err)); }
       return;
     }
     if (e.target.closest('a')) return;
