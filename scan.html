@@ -77,10 +77,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <div class="stats" id="statsBar"></div>
   <div id="reader"></div>
   <div class="manual">
-    <input type="text" id="manualId" placeholder="手動輸入編號，如 H001">
+    <input type="text" id="manualId" placeholder="輸入編號（如 H001）或電話號碼">
     <button id="manualBtn">報到</button>
   </div>
-  <p class="hint">📷 將 QR Code 對準鏡頭，或手動輸入報名編號</p>
+  <p class="hint">📷 將 QR Code 對準鏡頭，或手動輸入報名編號 / 電話號碼</p>
 </div>
 
 <!-- 結果 -->
@@ -89,7 +89,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <script>
 (function(){
   // ====================================================
-  const API_URL = 'https://script.google.com/macros/s/AKfycbzzCDYXCmfFJq0NvVu_rWS2JE-LJYpe1MLdLpG49cQ0Co0hXkPRUDMtGbNDv_JwMyiB/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbw_Zrq9MaIF9KaIF4SUW3h8d566epc7WOzdJiNFSQ4Ww4YNqaq_RKDdE6EFKpuPAyEr/exec';
   // ====================================================
   const IS_PREVIEW = !API_URL;
   const $ = s => document.querySelector(s);
@@ -152,23 +152,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
   // --- 掃描器 ---
   function startScanner() {
-    if (scanner) return;
-    scanner = new Html5Qrcode('reader');
+    if (scanning) return;
+    if (!scanner) scanner = new Html5Qrcode('reader');
     scanner.start(
       { facingMode: 'environment' },
       { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
       onScan,
       () => {}
-    ).catch(err => {
+    ).then(function() {
+      scanning = true;
+    }).catch(function(err) {
       $('#reader').innerHTML = '<p style="padding:40px;text-align:center;color:var(--muted)">📷 無法存取相機<br><br>請使用下方手動輸入報名編號</p>';
     });
-    scanning = true;
   }
 
   function stopScanner() {
     if (scanner && scanning) {
-      try { scanner.stop(); } catch(e){}
       scanning = false;
+      try { scanner.stop().catch(function(){}); } catch(e){}
     }
   }
 
@@ -204,22 +205,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     $('#resultView').innerHTML = '<div class="result-card"><div class="icon">⏳</div><h2>查詢中…</h2><div class="id">' + esc(id) + '</div></div>';
 
     try {
-      // 先查詢報名資料
+      // 先查詢報名資料（支援編號或電話）
       const lookup = await api('lookupRegistration', { pw: PW, id: id });
       const reg = lookup.registration;
+      const regId = reg.id || id;
 
       if (reg.checkedIn === '✔') {
-        // 已經報到過
-        showResult('dup', '⚠️', '已報到過', id, reg, '此編號已於 ' + (reg.checkinTime || '稍早') + ' 報到');
+        showResult('dup', '⚠️', '已報到過', regId, reg, '此編號已於 ' + (reg.checkinTime || '稍早') + ' 報到');
         return;
       }
 
-      // 執行報到
-      await api('checkinById', { pw: PW, id: id });
+      // 用查到的編號執行報到
+      await api('checkinById', { pw: PW, id: regId });
       stats.checkedIn++;
-      showResult('ok', '✅', '報到成功！', id, reg, '');
+      showResult('ok', '✅', '報到成功！', regId, reg, '');
     } catch (e) {
-      showResult('fail', '❌', '報到失敗', id, null, e.message || '找不到此報名編號');
+      showResult('fail', '❌', '報到失敗', id, null, e.message || '找不到此編號或電話');
     }
   }
 

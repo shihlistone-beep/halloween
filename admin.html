@@ -84,6 +84,11 @@ button,input{font:inherit}
 .detail dd{margin:0;word-break:break-word}
 .detail a{color:var(--blue)}
 .empty{text-align:center;color:var(--muted);padding:40px 0}
+.edit-form{margin-top:12px;display:grid;gap:8px;border-top:1px dashed var(--line);padding-top:12px}
+.edit-form label{font-size:13px;color:var(--muted)}
+.edit-form input{width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg2);color:var(--text);font-size:14px}
+.edit-form input:focus{outline:none;border-color:var(--orange)}
+.edit-btns{display:flex;gap:8px;margin-top:4px}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#000c;color:#fff;padding:10px 18px;border-radius:99px;font-size:14px;z-index:20;transition:opacity .3s}
 /* Settings sections */
 .set-sec{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px}
@@ -241,7 +246,7 @@ button,input{font:inherit}
   // ====================================================
   // ★★★ 部署後請把下面的網址換成你的 Apps Script 部署網址 ★★★
   // ====================================================
-  const API_URL = 'https://script.google.com/macros/s/AKfycbzzCDYXCmfFJq0NvVu_rWS2JE-LJYpe1MLdLpG49cQ0Co0hXkPRUDMtGbNDv_JwMyiB/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbw_Zrq9MaIF9KaIF4SUW3h8d566epc7WOzdJiNFSQ4Ww4YNqaq_RKDdE6EFKpuPAyEr/exec';
   // ====================================================
 
   const IS_PREVIEW = !API_URL;
@@ -328,11 +333,11 @@ button,input{font:inherit}
   const isIn = r => !!r.checkedIn;
 
   function renderStats() {
-    const s = { groups: ROWS.length, people: 0, adults: 0, kids: 0, pets: 0, inG: 0, inP: 0, stroller: 0, infant: 0, petStroller: 0, noPhoto: 0, nervous: 0 };
+    const s = { groups: ROWS.length, people: 0, adults: 0, kids: 0, pets: 0, inG: 0, inP: 0, inAdults: 0, inKids: 0, stroller: 0, infant: 0, petStroller: 0, noPhoto: 0, nervous: 0 };
     ROWS.forEach(r => {
       s.people += num(r.totalPeople); s.pets += num(r.petCount);
-      s.kids += num(r.children);
-      if (isIn(r)) { s.inG++; s.inP += num(r.totalPeople); }
+      s.adults += num(r.adults); s.kids += num(r.children);
+      if (isIn(r)) { s.inG++; s.inP += num(r.totalPeople); s.inAdults += num(r.adults); s.inKids += num(r.children); }
       if (r.needStroller === '需要') s.stroller++;
       if (r.hasInfant === '有') s.infant++;
       if (/推車/.test(r.petMode)) s.petStroller++;
@@ -340,12 +345,14 @@ button,input{font:inherit}
       if (/緊張|慢熟|自己的空間/.test(r.petTemper) || r.petNote) s.nervous++;
     });
     const pct = s.people ? Math.round(s.inP / s.people * 100) : 0;
+    const gPct = s.groups ? Math.round(s.inG / s.groups * 100) : 0;
     const card = (k, v, sub, cls) => '<div class="stat ' + (cls||'') + '"><div class="k">' + k + '</div><div class="v">' + v + '</div>' + (sub ? '<div class="s">' + sub + '</div>' : '') + '</div>';
     $('#stats').innerHTML =
       card('報名組數', s.groups, '', 'hl') +
-      card('總人數', s.people, '兒童 ' + s.kids + ' 人', 'hl') +
+      card('參加總人數', s.people + ' 人', '大人 ' + s.adults + '／兒童 ' + s.kids, 'hl') +
       card('毛孩', s.pets + ' 隻', '使用寵物推車 ' + s.petStroller + ' 組') +
-      '<div class="stat ok"><div class="k">已報到</div><div class="v">' + s.inP + ' / ' + s.people + '</div><div class="s">' + s.inG + ' 組・' + pct + '%</div><div class="bar"><i style="width:' + pct + '%"></i></div></div>' +
+      '<div class="stat ok"><div class="k">已報到</div><div class="v">' + s.inP + ' / ' + s.people + ' 人</div><div class="s">' + s.inG + ' / ' + s.groups + ' 組</div><div class="bar"><i style="width:' + pct + '%"></i></div></div>' +
+      '<div class="stat ' + (pct >= 80 ? 'ok' : pct >= 50 ? 'hl' : '') + '"><div class="k">出席率</div><div class="v">' + pct + '%</div><div class="s">人數 ' + s.inP + '/' + s.people + '・組數 ' + gPct + '%</div><div class="bar"><i style="width:' + pct + '%"></i></div></div>' +
       card('嬰兒推車', s.stroller + ' 組', '嬰幼兒同行 ' + s.infant + ' 組') +
       card('毛孩需留意', s.nervous + ' 組', '慢熟／緊張／有備註') +
       card('不同意拍照', s.noPhoto + ' 組', '攝影請避開');
@@ -403,7 +410,7 @@ button,input{font:inherit}
         '<div class="row"><input type="checkbox" class="sel-cb" data-sel="' + esc(r.id) + '"' + (selectedSet.has(r.id) ? ' checked' : '') + ' style="width:18px;height:18px;accent-color:var(--orange);flex:none;cursor:pointer"><div class="id">' + esc(r.id) + '</div>' +
         '<div class="main"><div class="n">' + esc(r.name) + '</div><div class="p">' + esc(r.phone) + (isIn(r) ? '・' + esc(r.checkinTime) + ' 報到' : '') + '</div><div class="badges">' + badges.join('') + '</div></div>' +
         '<button class="ck' + (isIn(r) ? ' on' : '') + '" data-ck>' + (isIn(r) ? '✔ 已報到' : '報到') + '</button></div>' +
-        '<div class="detail"><dl>' + det + '</dl><div style="margin-top:12px;text-align:right"><button class="btn" style="color:var(--red);border-color:var(--red);font-size:13px;padding:6px 14px" data-delete="' + esc(r.id) + '">🗑️ 刪除此報名</button></div></div></div>';
+        '<div class="detail"><dl>' + det + '</dl><div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end"><button class="btn" style="font-size:13px;padding:6px 14px" data-edit="' + esc(r.id) + '">✏️ 編輯</button><button class="btn" style="color:var(--red);border-color:var(--red);font-size:13px;padding:6px 14px" data-delete="' + esc(r.id) + '">🗑️ 刪除此報名</button></div><div class="edit-form" id="editForm_' + esc(r.id) + '" hidden></div></div></div>';
     }).join('');
   }
 
@@ -437,6 +444,60 @@ button,input{font:inherit}
         renderStats(); renderChips(); renderList();
         toast('🗑️ 已刪除 ' + delId + (delR ? ' ' + delR.name : ''));
       } catch (err) { delBtn.disabled = false; toast('刪除失敗：' + ((err && err.message) || err)); }
+      return;
+    }
+    if (e.target.closest('[data-edit]')) {
+      var editId = e.target.closest('[data-edit]').dataset.edit;
+      var editR = ROWS.find(x => x.id === editId);
+      if (!editR) return;
+      var form = document.getElementById('editForm_' + editId);
+      if (!form) return;
+      if (!form.hidden) { form.hidden = true; return; }
+      var editFields = [
+        { key: 'name', label: '主要聯絡人' },
+        { key: 'phone', label: '聯絡電話' },
+        { key: 'email', label: '電子信箱' },
+        { key: 'totalPeople', label: '總人數' },
+        { key: 'adults', label: '大人人數' },
+        { key: 'children', label: '兒童人數' },
+        { key: 'petCount', label: '寵物數量' },
+        { key: 'petNames', label: '毛孩名字' },
+        { key: 'note', label: '備註需求' },
+        { key: 'petNote', label: '毛孩注意事項' }
+      ];
+      form.innerHTML = editFields.map(function(f) {
+        return '<div><label>' + esc(f.label) + '</label><input data-field="' + f.key + '" value="' + esc(editR[f.key] || '') + '"></div>';
+      }).join('') + '<div class="edit-btns"><button class="btn primary" data-save-edit="' + esc(editId) + '" style="font-size:13px;padding:6px 14px">💾 儲存</button><button class="btn" data-cancel-edit="' + esc(editId) + '" style="font-size:13px;padding:6px 14px">取消</button></div>';
+      form.hidden = false;
+      return;
+    }
+    if (e.target.closest('[data-save-edit]')) {
+      var saveId = e.target.closest('[data-save-edit]').dataset.saveEdit;
+      var saveForm = document.getElementById('editForm_' + saveId);
+      if (!saveForm) return;
+      var saveBtn = e.target.closest('[data-save-edit]');
+      var updates = {};
+      saveForm.querySelectorAll('input[data-field]').forEach(function(inp) {
+        updates[inp.dataset.field] = inp.value.trim();
+      });
+      saveBtn.disabled = true;
+      saveBtn.textContent = '儲存中…';
+      try {
+        var res = await api('adminUpdateRegistration', { pw: PW, id: saveId, data: updates });
+        if (res.registration) {
+          var idx = ROWS.findIndex(x => x.id === saveId);
+          if (idx >= 0) Object.assign(ROWS[idx], res.registration);
+        }
+        saveForm.hidden = true;
+        renderStats(); renderList();
+        toast('✔ 已更新 ' + saveId + ' 的資料');
+      } catch (err) { saveBtn.disabled = false; saveBtn.textContent = '💾 儲存'; toast('更新失敗：' + ((err && err.message) || err)); }
+      return;
+    }
+    if (e.target.closest('[data-cancel-edit]')) {
+      var cancelId = e.target.closest('[data-cancel-edit]').dataset.cancelEdit;
+      var cancelForm = document.getElementById('editForm_' + cancelId);
+      if (cancelForm) cancelForm.hidden = true;
       return;
     }
     if (e.target.closest('a')) return;

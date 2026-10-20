@@ -132,6 +132,9 @@ function doPost(e) {
       case 'adminChangePassword':
         result = adminChangePassword(input.pw, input.newPw);
         break;
+      case 'adminUpdateRegistration':
+        result = adminUpdateRegistration(input.pw, input.id, input.data);
+        break;
       default:
         result = { error: '未知的 action：' + (input.action || '') };
     }
@@ -268,7 +271,7 @@ function validate_(x) {
     d.hasInfant = one(x.hasInfant, OPT.hasInfant);
     if (!d.hasInfant) e.push('請選擇是否有嬰幼兒同行');
     d.needStroller = one(x.needStroller, OPT.needStroller);
-    if (!d.needStroller) e.push('請選擇是否需要嬰兒推車');
+    if (!d.needStroller) e.push('請選擇是否會推嬰兒車到場');
     d.kidCostume = x.kidCostume ? one(x.kidCostume, OPT.kidCostume) || '' : '';
     if (x.childSafety !== true) e.push('請勾選兒童安全確認');
     d.childSafety = '已確認';
@@ -405,20 +408,61 @@ function adminDeleteAll(pw) {
   }
 }
 
+/** 修改報名資料（後台用） */
+function adminUpdateRegistration(pw, id, data) {
+  checkAdmin_(pw);
+  if (!id || !data) throw new Error('缺少必要參數');
+  var sh = ensureSheet_();
+  var last = sh.getLastRow();
+  if (last < 2) throw new Error('找不到報名資料');
+  var ids = sh.getRange(2, 1, last - 1, 1).getDisplayValues().flat();
+  var idx = ids.indexOf(String(id));
+  if (idx === -1) throw new Error('找不到報名編號 ' + id);
+  var row = idx + 2;
+  // 只更新允許修改的欄位
+  var editable = ['name', 'phone', 'email', 'totalPeople', 'adults', 'children', 'petCount', 'petNames', 'note', 'petNote'];
+  editable.forEach(function(key) {
+    if (data[key] !== undefined) {
+      var col = fieldIndex_(key);
+      if (col >= 0) sh.getRange(row, col + 1).setValue(safeCell_(data[key]));
+    }
+  });
+  // 回傳更新後的資料
+  var vals = sh.getRange(row, 1, 1, sh.getLastColumn()).getDisplayValues()[0];
+  var obj = {};
+  FIELDS.forEach(function(f, i) { obj[f[0]] = vals[i] || ''; });
+  return { ok: true, registration: obj };
+}
+
 // ===================== QR 報到 =====================
 
-/** 用報名編號查詢報名資料（報到頁用） */
+/** 用報名編號或電話號碼查詢報名資料（報到頁用） */
 function lookupRegistration(pw, id) {
   checkAdmin_(pw);
-  const sh = ensureSheet_();
-  const last = sh.getLastRow();
+  var query = String(id || '').trim();
+  if (!query) throw new Error('請輸入編號或電話號碼');
+  var sh = ensureSheet_();
+  var last = sh.getLastRow();
   if (last < 2) throw new Error('找不到報名資料');
-  const ids = sh.getRange(2, 1, last - 1, 1).getDisplayValues().flat();
-  const idx = ids.indexOf(String(id));
-  if (idx === -1) throw new Error('找不到報名編號 ' + id);
-  const row = idx + 2;
-  const vals = sh.getRange(row, 1, 1, sh.getLastColumn()).getDisplayValues()[0];
-  const obj = {};
+  var cols = sh.getLastColumn();
+  var data = sh.getRange(2, 1, last - 1, cols).getDisplayValues();
+  var idCol = fieldIndex_('id');
+  var phoneCol = fieldIndex_('phone');
+  var row = -1;
+  // 先用編號找
+  for (var i = 0; i < data.length; i++) {
+    if (data[i][idCol] === query) { row = i; break; }
+  }
+  // 找不到就用電話找
+  if (row === -1) {
+    var normQuery = normPhone_(query);
+    for (var i = 0; i < data.length; i++) {
+      if (normPhone_(data[i][phoneCol]) === normQuery) { row = i; break; }
+    }
+  }
+  if (row === -1) throw new Error('找不到編號或電話 ' + query);
+  var vals = data[row];
+  var obj = {};
   FIELDS.forEach(function(f, i) { obj[f[0]] = vals[i] || ''; });
   return { registration: obj };
 }
@@ -439,6 +483,13 @@ function sendConfirmationEmail_(data) {
   var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(qrContent);
   var qrBlob = UrlFetchApp.fetch(qrUrl).getBlob().setName('qrcode.png');
 
+  var info = getEventInfo();
+  var checkinTime = info.checkinTime || '17:40－18:00';
+  var departTime = info.departTime || '18:10 準時出發';
+  var depShort = departTime.replace(/\s*準時出發/, '');
+  var evDate = info.date || '10/30（五）';
+  var evLocation = info.location || '什浬鍋停車場';
+
   var html = '<!DOCTYPE html><html><body style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:20px">'
     + '<div style="background:#1a1a2e;color:#fff;padding:24px;border-radius:12px;text-align:center">'
     + '<h1 style="margin:0 0 8px">🎃 報名成功！</h1>'
@@ -451,8 +502,8 @@ function sendConfirmationEmail_(data) {
     + '<img src="cid:qrcode" alt="QR Code" style="width:200px;height:200px;border-radius:8px" />'
     + '</div>'
     + '<div style="background:#f8f5ff;border-radius:12px;padding:16px;margin:16px 0">'
-    + '<p style="margin:0 0 8px">📍 請於 <b>10/30（五）17:40－18:00</b> 至<b>什浬鍋停車場</b>報到</p>'
-    + '<p style="margin:0 0 8px">🚶 隊伍預計於 <b>18:10</b> 準時出發</p>'
+    + '<p style="margin:0 0 8px">📍 請於 <b>' + evDate + ' ' + checkinTime + '</b> 至<b>' + evLocation + '</b>報到</p>'
+    + '<p style="margin:0 0 8px">🚶 隊伍預計於 <b>' + depShort + '</b> 準時出發</p>'
     + '<p style="margin:0;color:#888">若遲到請至什浬鍋店內櫃檯報到，由工作人員協助。</p>'
     + '</div>'
     + '<p style="color:#888;font-size:13px;text-align:center">報名資訊：' + data.name + '／' + data.totalPeople + ' 人' + (Number(data.petCount) > 0 ? '＋' + data.petCount + ' 隻毛孩' : '') + '</p>'
