@@ -112,7 +112,22 @@ button,input{font:inherit}
 .img-card .del:hover{background:var(--red)}
 .uploading{opacity:.5;pointer-events:none}
 .preview-tag{position:fixed;top:8px;right:8px;background:#ffb347;color:#1a0f00;font-size:12px;font-weight:700;padding:3px 10px;border-radius:99px;z-index:30}
-@media (max-width:600px){.detail dl{grid-template-columns:1fr}.detail dt{margin-top:6px}.top .btn{flex:1}.main-tab{padding:10px 14px;font-size:14px}}
+/* 分頁 */
+.pager{display:flex;align-items:center;justify-content:center;gap:6px;margin:14px 0;flex-wrap:wrap}
+.pager button{min-width:36px;height:36px;border:1.5px solid var(--line);background:var(--card2);color:var(--text);border-radius:10px;cursor:pointer;font-size:14px;font-weight:700}
+.pager button.on{background:var(--orange);color:#1a0f00;border-color:var(--orange)}
+.pager button:disabled{opacity:.4;cursor:default}
+.pager .info{font-size:13px;color:var(--muted)}
+/* 回到頂部 */
+.go-top{position:fixed;right:16px;bottom:20px;width:44px;height:44px;border-radius:50%;background:var(--orange);color:#1a0f00;border:none;font-size:20px;cursor:pointer;z-index:15;box-shadow:0 2px 8px #0005;display:none;place-items:center}
+.go-top.show{display:grid}
+@media (max-width:600px){
+  .detail dl{grid-template-columns:1fr}.detail dt{margin-top:6px}.top .btn{flex:1}.main-tab{padding:10px 14px;font-size:14px}
+  .pager{gap:8px;padding:8px 0}
+  .pager button{min-width:40px;height:40px;font-size:15px;border-radius:12px}
+  .go-top{width:50px;height:50px;font-size:22px;right:12px;bottom:16px}
+  .list{margin-bottom:8px}
+}
 </style>
 </head>
 <body>
@@ -158,7 +173,9 @@ button,input{font:inherit}
         <button class="btn" id="deleteAllBtn" style="color:var(--red);border-color:var(--red);font-size:13px">⚠️ 清空全部報名</button>
       </div>
       <div class="list" id="list"></div>
+      <div class="pager" id="pager"></div>
     </div>
+    <button class="go-top" id="goTop" title="回到頂部">⬆</button>
 
     <!-- ===== 分頁2：後台設定 ===== -->
     <div class="tab-panel" id="tabSettings">
@@ -383,7 +400,10 @@ button,input{font:inherit}
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
   const openSet = new Set();
-  function renderList() {
+  const PAGE_SIZE = 20;
+  let curPage = 1;
+
+  function renderList(keepPage) {
     const q = $('#q').value.trim().toLowerCase();
     const qd = q.replace(/\D/g, '');
     const fn = (FILTERS.find(f => f[0] === FILTER) || FILTERS[0])[2];
@@ -392,11 +412,16 @@ button,input{font:inherit}
       const hay = [r.id, r.name, r.email, r.petNames, r.note].join(' ').toLowerCase();
       return hay.includes(q) || (qd.length >= 3 && String(r.phone).replace(/\D/g,'').includes(qd));
     });
+    const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+    if (!keepPage) curPage = 1;
+    if (curPage > totalPages) curPage = totalPages;
+    const start = (curPage - 1) * PAGE_SIZE;
+    const pageRows = rows.slice(start, start + PAGE_SIZE);
     $('#count').textContent = '顯示 ' + rows.length + ' / ' + ROWS.length + ' 筆';
     const list = $('#list');
-    if (!rows.length) { list.innerHTML = '<div class="empty">' + (ROWS.length ? '找不到符合的報名' : '目前還沒有報名資料 👻') + '</div>'; return; }
+    if (!rows.length) { list.innerHTML = '<div class="empty">' + (ROWS.length ? '找不到符合的報名' : '目前還沒有報名資料 👻') + '</div>'; $('#pager').innerHTML = ''; return; }
 
-    list.innerHTML = rows.map(r => {
+    list.innerHTML = pageRows.map(r => {
       const badges = [];
       badges.push('<span class="b">👥 ' + esc(r.totalPeople) + '人</span>');
       if (hasKids(r)) badges.push('<span class="b">👧 兒童' + esc(r.children) + '</span>');
@@ -412,7 +437,40 @@ button,input{font:inherit}
         '<button class="ck' + (isIn(r) ? ' on' : '') + '" data-ck>' + (isIn(r) ? '✔ 已報到' : '報到') + '</button></div>' +
         '<div class="detail"><dl>' + det + '</dl><div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end"><button class="btn" style="font-size:13px;padding:6px 14px" data-edit="' + esc(r.id) + '">✏️ 編輯</button><button class="btn" style="color:var(--red);border-color:var(--red);font-size:13px;padding:6px 14px" data-delete="' + esc(r.id) + '">🗑️ 刪除此報名</button></div><div class="edit-form" id="editForm_' + esc(r.id) + '" hidden></div></div></div>';
     }).join('');
+
+    // 分頁控制
+    var pg = $('#pager');
+    if (totalPages <= 1) { pg.innerHTML = ''; return; }
+    var ph = '<button ' + (curPage <= 1 ? 'disabled' : '') + ' data-pg="' + (curPage - 1) + '">‹</button>';
+    for (var p = 1; p <= totalPages; p++) {
+      if (totalPages > 7 && p > 2 && p < totalPages - 1 && Math.abs(p - curPage) > 1) {
+        if (p === 3 || p === totalPages - 2) ph += '<span class="info">…</span>';
+        continue;
+      }
+      ph += '<button class="' + (p === curPage ? 'on' : '') + '" data-pg="' + p + '">' + p + '</button>';
+    }
+    ph += '<button ' + (curPage >= totalPages ? 'disabled' : '') + ' data-pg="' + (curPage + 1) + '">›</button>';
+    ph += '<span class="info">第 ' + ((curPage-1)*PAGE_SIZE+1) + '-' + Math.min(curPage*PAGE_SIZE, rows.length) + ' 筆</span>';
+    pg.innerHTML = ph;
   }
+
+  // --- 分頁點擊 ---
+  $('#pager').addEventListener('click', e => {
+    var btn = e.target.closest('[data-pg]');
+    if (!btn || btn.disabled) return;
+    curPage = parseInt(btn.dataset.pg, 10);
+    renderList(true);
+    document.getElementById('list').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  // --- 回到頂部 ---
+  var goTopBtn = $('#goTop');
+  window.addEventListener('scroll', () => {
+    goTopBtn.classList.toggle('show', window.scrollY > 400);
+  });
+  goTopBtn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
 
   $('#list').addEventListener('click', async e => {
     const item = e.target.closest('.item'); if (!item) return;
@@ -426,7 +484,7 @@ button,input{font:inherit}
       try {
         const res = await api('adminSetCheckin', { pw: PW, id, checked: next });
         r.checkedIn = res.checkedIn; r.checkinTime = res.checkinTime;
-        renderStats(); renderChips(); renderList();
+        renderStats(); renderChips(); renderList(true);
         toast(next ? '✔ ' + r.name + ' 已報到' : '已取消報到');
       } catch (err) { btn.disabled = false; toast('失敗：' + ((err && err.message) || err)); }
       return;
@@ -441,7 +499,7 @@ button,input{font:inherit}
         await api('adminDeleteRegistration', { pw: PW, id: delId });
         ROWS = ROWS.filter(x => x.id !== delId);
         openSet.delete(delId);
-        renderStats(); renderChips(); renderList();
+        renderStats(); renderChips(); renderList(true);
         toast('🗑️ 已刪除 ' + delId + (delR ? ' ' + delR.name : ''));
       } catch (err) { delBtn.disabled = false; toast('刪除失敗：' + ((err && err.message) || err)); }
       return;
@@ -489,7 +547,7 @@ button,input{font:inherit}
           if (idx >= 0) Object.assign(ROWS[idx], res.registration);
         }
         saveForm.hidden = true;
-        renderStats(); renderList();
+        renderStats(); renderList(true);
         toast('✔ 已更新 ' + saveId + ' 的資料');
       } catch (err) { saveBtn.disabled = false; saveBtn.textContent = '💾 儲存'; toast('更新失敗：' + ((err && err.message) || err)); }
       return;
