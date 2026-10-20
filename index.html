@@ -625,7 +625,7 @@ footer{text-align:center;color:#8a7aa3;font-size:12.5px;margin-top:32px}
   'use strict';
 
   // ====================================================
-  const API_URL = 'https://script.google.com/macros/s/AKfycbzaOzPL1kdE8Wsokd96iWgzdbNSFTPsicEBFM7xHIyhae2dOirJsYNKy1hdv9u8VQ0/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbzzCDYXCmfFJq0NvVu_rWS2JE-LJYpe1MLdLpG49cQ0Co0hXkPRUDMtGbNDv_JwMyiB/exec';
   // ====================================================
 
   const KIDS = ['親子家庭（有小朋友）','親子與寵物一起參加'];
@@ -657,7 +657,7 @@ footer{text-align:center;color:#8a7aa3;font-size:12.5px;margin-top:32px}
     dd('evDepartTime', res.departTime);
     dd('evAudience', res.audience);
     // 填入禮物說明
-    if (res.giftDesc) { var gd = document.getElementById('giftDesc'); if (gd) gd.textContent = res.giftDesc; }
+    if (res.giftDesc != null) { var gd = document.getElementById('giftDesc'); if (gd) gd.textContent = res.giftDesc; }
     // 填入須知
     var ol = document.getElementById('eventRules');
     if (ol && res.rules && res.rules.length) {
