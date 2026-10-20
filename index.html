@@ -17,9 +17,10 @@
 html{-webkit-text-size-adjust:100%}
 body{margin:0;font-family:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
   color:var(--text);background:var(--bg);line-height:1.65;font-size:16px;
-  background-image:radial-gradient(circle at 85% -10%,#ff8a1f33 0,transparent 40%),
-                   radial-gradient(circle at 0% 30%,#6b3fa033 0,transparent 45%);
-  background-attachment:fixed;min-height:100vh}
+  min-height:100vh;-webkit-overflow-scrolling:touch}
+body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(circle at 85% -10%,#ff8a1f33 0,transparent 40%),
+             radial-gradient(circle at 0% 30%,#6b3fa033 0,transparent 45%)}
 
 /* ==================== 邀請函封面 ==================== */
 .invite-screen{
@@ -35,7 +36,7 @@ body{margin:0;font-family:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","
 .invite-screen.hide{opacity:0;visibility:hidden;pointer-events:none}
 
 /* 飄浮的可愛小鬼們 */
-.invite-screen .spooky{position:absolute;font-size:32px;opacity:.45;animation:spookyFloat 5s ease-in-out infinite;pointer-events:none}
+.invite-screen .spooky{position:absolute;font-size:32px;opacity:.45;animation:spookyFloat 5s ease-in-out infinite;pointer-events:none;will-change:transform}
 .s1{left:8%;top:15%;animation-delay:0s}.s2{right:10%;top:10%;animation-delay:-1.5s;font-size:28px}
 .s3{left:5%;bottom:20%;animation-delay:-3s;font-size:24px}.s4{right:12%;bottom:25%;animation-delay:-2s;font-size:36px}
 .s5{left:45%;top:8%;animation-delay:-4s;font-size:20px}.s6{right:30%;bottom:12%;animation-delay:-.8s;font-size:22px}
@@ -184,7 +185,7 @@ body{margin:0;font-family:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","
 .moon{width:92px;height:92px;border-radius:50%;margin:0 auto 10px;
   background:radial-gradient(circle at 35% 35%,#fff4d6,#ffcf7a 60%,#ff9e3d);
   box-shadow:0 0 60px #ffb34788;display:grid;place-items:center;font-size:48px}
-.float{position:absolute;font-size:26px;opacity:.75;animation:fly 6s ease-in-out infinite}
+.float{position:absolute;font-size:26px;opacity:.75;animation:fly 6s ease-in-out infinite;will-change:transform}
 .f1{left:6%;top:24px}.f2{right:8%;top:60px;animation-delay:-2s}.f3{left:16%;top:120px;animation-delay:-4s;font-size:20px}
 @keyframes fly{50%{transform:translateY(-10px) rotate(-6deg)}}
 @media (prefers-reduced-motion:reduce){.float{animation:none}}
@@ -286,17 +287,20 @@ footer{text-align:center;color:#8a7aa3;font-size:12.5px;margin-top:32px}
 .gallery-grid img:hover{transform:scale(1.02)}
 .gallery-empty{color:var(--muted);font-size:14px;padding:16px 0}
 /* Lightbox */
-.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:100;place-items:center;padding:16px}
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:100;place-items:center;padding:16px;
+  -webkit-tap-highlight-color:transparent}
 .lightbox.on{display:grid}
-.lightbox img{max-width:100%;max-height:90vh;border-radius:12px;object-fit:contain}
-.lightbox .close{position:absolute;top:12px;right:16px;font-size:32px;color:#fff;cursor:pointer;background:none;border:0;line-height:1}
+.lightbox img{max-width:100%;max-height:85vh;border-radius:12px;object-fit:contain;pointer-events:none}
+.lightbox .close{position:absolute;top:8px;right:8px;font-size:28px;color:#fff;cursor:pointer;background:rgba(0,0,0,.5);
+  border:none;line-height:1;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;z-index:101;
+  -webkit-tap-highlight-color:transparent}
 @media (max-width:380px){.choices.cols2{grid-template-columns:1fr}.row2{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
 <!-- 背景音樂 -->
-<audio id="bgm" loop preload="none"></audio>
+<audio id="bgm" loop preload="metadata"></audio>
 <button class="music-btn" id="musicBtn" title="音樂開關">🔊</button>
 
 <!-- ==================== 邀請函封面 ==================== -->
@@ -583,7 +587,7 @@ footer{text-align:center;color:#8a7aa3;font-size:12.5px;margin-top:32px}
     <!-- 活動禮物（報名者現場領取） -->
     <div class="gallery-sec" id="giftSec" hidden>
       <h2>🎁 活動禮物</h2>
-      <p style="color:var(--muted);font-size:14px;margin:-6px 0 12px">完成報名後，活動當天現場發放 🎉</p>
+      <p style="color:var(--muted);font-size:14px;margin:-6px 0 12px" id="giftDesc">活動當日完成報到並全程參與者，即可獲得萬聖節小禮物一份！🎃</p>
       <div class="gallery-grid multi" id="giftGrid"></div>
     </div>
 
@@ -621,7 +625,7 @@ footer{text-align:center;color:#8a7aa3;font-size:12.5px;margin-top:32px}
   'use strict';
 
   // ====================================================
-  const API_URL = 'https://script.google.com/macros/s/AKfycbxCIPezJiX2DlOeUAbL7PyHUpDcOk20_Y9Mw9xrFkwc8F6WhkrgyrUf5qqY750BSzw6/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbzPoEbJ10QnNCOJUBzJTZA130egPrbjlF1qoQEozobQ-lJ4IFquyJLwLcbz2LVZXAab/exec';
   // ====================================================
 
   const KIDS = ['親子家庭（有小朋友）','親子與寵物一起參加'];
@@ -652,6 +656,8 @@ footer{text-align:center;color:#8a7aa3;font-size:12.5px;margin-top:32px}
     dd('evCheckinTime', res.checkinTime);
     dd('evDepartTime', res.departTime);
     dd('evAudience', res.audience);
+    // 填入禮物說明
+    if (res.giftDesc) { var gd = document.getElementById('giftDesc'); if (gd) gd.textContent = res.giftDesc; }
     // 填入須知
     var ol = document.getElementById('eventRules');
     if (ol && res.rules && res.rules.length) {
@@ -659,22 +665,37 @@ footer{text-align:center;color:#8a7aa3;font-size:12.5px;margin-top:32px}
     }
   }).catch(function(){});
 
-  // 從後端取得音樂連結
+  // 從後端取得音樂連結（預先載入）
+  var musicReady = false;
   api('getMusic').then(function(res) {
     if (res && res.url) {
       bgm.src = res.url;
+      bgm.preload = 'auto';
+      bgm.load();
       musicBtn.classList.add('show');
+      musicReady = true;
+      // 如果用戶已經點了信封但音樂還沒就緒，現在嘗試播放
+      if (pendingPlay) { pendingPlay = false; playMusic(); }
     }
   }).catch(function(){});
 
+  var pendingPlay = false;
   function playMusic() {
-    if (!bgm.src || musicPlaying) return;
+    if (musicPlaying) return;
+    if (!bgm.src) {
+      // 音樂連結還沒載入，標記等載入後自動播放
+      pendingPlay = true;
+      return;
+    }
     bgm.volume = 0.4;
     bgm.play().then(function() {
       musicPlaying = true;
       musicBtn.textContent = '🔊';
       musicBtn.classList.remove('off');
-    }).catch(function(){});
+    }).catch(function(){
+      // 手機瀏覽器可能阻擋，等下次觸碰再試
+      pendingPlay = true;
+    });
   }
   function toggleMusic() {
     if (!bgm.src) return;
@@ -692,6 +713,14 @@ footer{text-align:center;color:#8a7aa3;font-size:12.5px;margin-top:32px}
     }
   }
   musicBtn.addEventListener('click', function(e) { e.stopPropagation(); toggleMusic(); });
+  // 音樂載入完成後如果有待播放的請求，在下次觸碰時播放
+  document.addEventListener('touchstart', function tryPlay() {
+    if (pendingPlay && bgm.src && !musicPlaying) {
+      pendingPlay = false;
+      playMusic();
+    }
+    if (musicPlaying || !pendingPlay) document.removeEventListener('touchstart', tryPlay);
+  }, { passive: true });
 
   // ==================== 邀請函互動 ====================
   var envelopeOpened = false;
@@ -887,9 +916,9 @@ footer{text-align:center;color:#8a7aa3;font-size:12.5px;margin-top:32px}
 
   // Lightbox
   const lb = $('#lightbox');
-  lb.querySelector('.close').onclick = () => lb.classList.remove('on');
-  lb.onclick = e => { if (e.target === lb) lb.classList.remove('on'); };
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('on'); });
+  lb.querySelector('.close').onclick = function(e) { e.stopPropagation(); lb.classList.remove('on'); };
+  lb.onclick = function() { lb.classList.remove('on'); };
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') lb.classList.remove('on'); });
   function openLightbox(src) { lb.querySelector('img').src = src; lb.classList.add('on'); }
 
   // 載入圖片（路線圖 & 禮物）
