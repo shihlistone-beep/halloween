@@ -510,7 +510,7 @@ button,input{font:inherit}
       if (!editR) return;
       var form = document.getElementById('editForm_' + editId);
       if (!form) return;
-      if (!form.hidden) { form.hidden = true; item.scrollIntoView({ behavior:'smooth', block:'nearest' }); return; }
+      if (!form.hidden) { form.hidden = true; setTimeout(function(){ item.scrollIntoView({ behavior:'smooth', block:'start' }); }, 50); return; }
       var editFields = [
         { key: 'name', label: '主要聯絡人' },
         { key: 'phone', label: '聯絡電話' },
@@ -550,8 +550,10 @@ button,input{font:inherit}
         saveForm.hidden = true;
         renderStats(); renderList(true);
         toast('✔ 已更新 ' + saveId + ' 的資料');
-        var savedItem = document.querySelector('[data-id="' + saveId + '"]');
-        if (savedItem) savedItem.scrollIntoView({ behavior:'smooth', block:'nearest' });
+        setTimeout(function(){
+          var savedItem = document.querySelector('[data-id="' + saveId + '"]');
+          if (savedItem) savedItem.scrollIntoView({ behavior:'smooth', block:'start' });
+        }, 50);
       } catch (err) { saveBtn.disabled = false; saveBtn.textContent = '💾 儲存'; toast('更新失敗：' + ((err && err.message) || err)); }
       return;
     }
@@ -559,8 +561,10 @@ button,input{font:inherit}
       var cancelId = e.target.closest('[data-cancel-edit]').dataset.cancelEdit;
       var cancelForm = document.getElementById('editForm_' + cancelId);
       if (cancelForm) cancelForm.hidden = true;
-      var cancelItem = document.querySelector('[data-id="' + cancelId + '"]');
-      if (cancelItem) cancelItem.scrollIntoView({ behavior:'smooth', block:'nearest' });
+      setTimeout(function(){
+        var cancelItem = document.querySelector('[data-id="' + cancelId + '"]');
+        if (cancelItem) cancelItem.scrollIntoView({ behavior:'smooth', block:'start' });
+      }, 50);
       return;
     }
     if (e.target.closest('a')) return;
