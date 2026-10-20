@@ -510,7 +510,7 @@ button,input{font:inherit}
       if (!editR) return;
       var form = document.getElementById('editForm_' + editId);
       if (!form) return;
-      if (!form.hidden) { form.hidden = true; return; }
+      if (!form.hidden) { form.hidden = true; item.scrollIntoView({ behavior:'smooth', block:'nearest' }); return; }
       var editFields = [
         { key: 'name', label: '主要聯絡人' },
         { key: 'phone', label: '聯絡電話' },
@@ -527,6 +527,7 @@ button,input{font:inherit}
         return '<div><label>' + esc(f.label) + '</label><input data-field="' + f.key + '" value="' + esc(editR[f.key] || '') + '"></div>';
       }).join('') + '<div class="edit-btns"><button class="btn primary" data-save-edit="' + esc(editId) + '" style="font-size:13px;padding:6px 14px">💾 儲存</button><button class="btn" data-cancel-edit="' + esc(editId) + '" style="font-size:13px;padding:6px 14px">取消</button></div>';
       form.hidden = false;
+      setTimeout(function(){ form.scrollIntoView({ behavior:'smooth', block:'nearest' }); }, 100);
       return;
     }
     if (e.target.closest('[data-save-edit]')) {
@@ -549,6 +550,8 @@ button,input{font:inherit}
         saveForm.hidden = true;
         renderStats(); renderList(true);
         toast('✔ 已更新 ' + saveId + ' 的資料');
+        var savedItem = document.querySelector('[data-id="' + saveId + '"]');
+        if (savedItem) savedItem.scrollIntoView({ behavior:'smooth', block:'nearest' });
       } catch (err) { saveBtn.disabled = false; saveBtn.textContent = '💾 儲存'; toast('更新失敗：' + ((err && err.message) || err)); }
       return;
     }
@@ -556,6 +559,8 @@ button,input{font:inherit}
       var cancelId = e.target.closest('[data-cancel-edit]').dataset.cancelEdit;
       var cancelForm = document.getElementById('editForm_' + cancelId);
       if (cancelForm) cancelForm.hidden = true;
+      var cancelItem = document.querySelector('[data-id="' + cancelId + '"]');
+      if (cancelItem) cancelItem.scrollIntoView({ behavior:'smooth', block:'nearest' });
       return;
     }
     if (e.target.closest('a')) return;
