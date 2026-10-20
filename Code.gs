@@ -10,7 +10,6 @@ const CONFIG = {
   SHEET_NAME: '報名資料',
   TIMEZONE: 'Asia/Taipei',
   DEADLINE: '2026-10-30T17:00:00+08:00',
-  MAX_PEOPLE: 0,
   BLOCK_DUPLICATE_PHONE: true,
   SITE_URL: 'https://shihlistone-beep.github.io/halloween',
 };
@@ -176,12 +175,24 @@ function ensureSheet_() {
 }
 
 // ===================== 前台 API =====================
+function getMaxGroups_() {
+  var info = getEventInfo();
+  var mg = Number(info.maxGroups);
+  return mg > 0 ? mg : 0;
+}
+
+function countGroups_() {
+  var sh = ensureSheet_();
+  return Math.max(0, sh.getLastRow() - 1);
+}
+
 function getFormStatus() {
   if (CONFIG.DEADLINE && new Date() > new Date(CONFIG.DEADLINE)) {
     return { open: false, message: '報名已截止，感謝大家的熱情支持！現場若有名額，歡迎洽什浬鍋櫃檯。' };
   }
-  if (CONFIG.MAX_PEOPLE > 0 && countPeople_() >= CONFIG.MAX_PEOPLE) {
-    return { open: false, message: '報名人數已額滿，感謝大家的熱情支持！' };
+  var maxG = getMaxGroups_();
+  if (maxG > 0 && countGroups_() >= maxG) {
+    return { open: false, message: '報名已額滿，感謝大家的熱情支持！' };
   }
   return { open: true };
 }
@@ -209,8 +220,9 @@ function submitRegistration(input) {
         return { ok: false, errors: ['這支電話已經報名過囉！如需修改報名資料，請直接聯繫什浬鍋。'] };
       }
     }
-    if (CONFIG.MAX_PEOPLE > 0 && countPeople_() + Number(data.totalPeople) > CONFIG.MAX_PEOPLE) {
-      return { ok: false, errors: ['剩餘名額不足，請減少人數或洽什浬鍋櫃檯。'] };
+    var maxG = getMaxGroups_();
+    if (maxG > 0 && countGroups_() >= maxG) {
+      return { ok: false, errors: ['報名已額滿，請洽什浬鍋櫃檯。'] };
     }
 
     data.id = 'H' + String(last).padStart(3, '0');
@@ -616,6 +628,7 @@ var DEFAULT_EVENT_INFO = {
   departTime: '18:10 準時出發',
   audience: '親子家庭、寵物家庭及一般民眾',
   giftDesc: '活動當日完成報到並全程參與者，即可獲得萬聖節小禮物一份！🎃',
+  maxGroups: 0,
   rules: [
     '請於 17:40－18:00 至什浬鍋停車場完成報到，隊伍預計於 18:10 準時出發。',
     '若因故晚到，請直接至什浬鍋店內櫃檯報到，由工作人員協助確認後續參與方式，請勿自行追趕遊街隊伍。',
@@ -649,7 +662,8 @@ function adminSetEventInfo(pw, data) {
     departTime: String(data.departTime || '').trim(),
     audience: String(data.audience || '').trim(),
     rules: Array.isArray(data.rules) ? data.rules.map(function(r){ return String(r).trim(); }).filter(function(r){ return r; }) : [],
-    giftDesc: String(data.giftDesc || '').trim()
+    giftDesc: String(data.giftDesc || '').trim(),
+    maxGroups: Math.max(0, parseInt(data.maxGroups, 10) || 0)
   };
   var props = PropertiesService.getScriptProperties();
   props.setProperty('EVENT_INFO', JSON.stringify(info));

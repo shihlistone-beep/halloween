@@ -202,6 +202,11 @@ button,input{font:inherit}
           </div>
           <div><label class="field-label">👨‍👩‍👧 活動對象</label>
             <input type="text" id="evAudience" class="search" placeholder="例：親子家庭、寵物家庭及一般民眾"></div>
+          <div><label class="field-label">👥 報名組數上限</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="number" id="evMaxGroups" class="search" style="max-width:140px" min="0" placeholder="0">
+              <span style="color:var(--muted);font-size:13px">組（0 或留空 = 不限制）</span>
+            </div></div>
           <div><label class="field-label">🎁 活動禮物說明</label>
             <input type="text" id="evGiftDesc" class="search" placeholder="例：活動當日完成報到並全程參與者，即可獲得萬聖節小禮物一份！🎃"></div>
           <div><label class="field-label">📌 報到與參加須知（每行一條）</label>
@@ -264,7 +269,7 @@ button,input{font:inherit}
   // ====================================================
   // ★★★ 部署後請把下面的網址換成你的 Apps Script 部署網址 ★★★
   // ====================================================
-  const API_URL = 'https://script.google.com/macros/s/AKfycbz5_YcrzWTppAdevO9dVXE4-RTZeRLD2RkTCZw-LAfrxkFEcKb-KkhIACnR_v4R9PU/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbwSEoFEaUvpRsv5DYMZLeiv2rXx1q3P819FtN3-CI8ETnxxbZL_Bv_Ac6O1VWvOKQo4/exec';
   // ====================================================
 
   const IS_PREVIEW = !API_URL;
@@ -734,6 +739,7 @@ button,input{font:inherit}
         $('#evAudience').value = res.audience || '';
         $('#evRules').value = (res.rules || []).join('\n');
         $('#evGiftDesc').value = res.giftDesc || '';
+        $('#evMaxGroups').value = (res.maxGroups && Number(res.maxGroups) > 0) ? res.maxGroups : '';
         $('#eventStatus').textContent = '✅ 已載入目前設定';
       }
     } catch (e) { $('#eventStatus').textContent = '⚠️ 載入失敗（請確認 Code.gs 已部署新版本）'; }
@@ -747,7 +753,8 @@ button,input{font:inherit}
       departTime: $('#evDepartTime').value.trim(),
       audience: $('#evAudience').value.trim(),
       rules: $('#evRules').value.split('\n').map(s => s.trim()).filter(s => s),
-      giftDesc: $('#evGiftDesc').value.trim()
+      giftDesc: $('#evGiftDesc').value.trim(),
+      maxGroups: parseInt($('#evMaxGroups').value, 10) || 0
     };
     $('#saveEventBtn').disabled = true;
     try {
