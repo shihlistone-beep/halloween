@@ -216,6 +216,19 @@ button,input{font:inherit}
         </div>
         <div class="img-grid" id="imgGrid"></div>
       </div>
+
+      <!-- 修改密碼 -->
+      <div class="set-sec">
+        <h2>🔑 修改管理密碼</h2>
+        <div style="display:grid;gap:10px;max-width:400px">
+          <input type="password" id="newPw" class="search" placeholder="輸入新密碼（至少 4 個字元）">
+          <input type="password" id="newPw2" class="search" placeholder="再次確認新密碼">
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn primary" id="changePwBtn" style="flex:none">🔒 更新密碼</button>
+            <span style="color:var(--muted);font-size:13px" id="pwStatus"></span>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -228,7 +241,7 @@ button,input{font:inherit}
   // ====================================================
   // ★★★ 部署後請把下面的網址換成你的 Apps Script 部署網址 ★★★
   // ====================================================
-  const API_URL = 'https://script.google.com/macros/s/AKfycbzPoEbJ10QnNCOJUBzJTZA130egPrbjlF1qoQEozobQ-lJ4IFquyJLwLcbz2LVZXAab/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbzaOzPL1kdE8Wsokd96iWgzdbNSFTPsicEBFM7xHIyhae2dOirJsYNKy1hdv9u8VQ0/exec';
   // ====================================================
 
   const IS_PREVIEW = !API_URL;
@@ -634,6 +647,26 @@ button,input{font:inherit}
       toast('✔ 背景音樂已更新');
     } catch (err) { toast('儲存失敗：' + (err.message || err)); }
     $('#saveMusicBtn').disabled = false;
+  });
+
+  // --- 修改密碼 ---
+  $('#changePwBtn').addEventListener('click', async () => {
+    var np = $('#newPw').value.trim();
+    var np2 = $('#newPw2').value.trim();
+    if (!np) { toast('請輸入新密碼'); return; }
+    if (np.length < 4) { toast('新密碼至少需要 4 個字元'); return; }
+    if (np !== np2) { toast('兩次密碼不一致'); return; }
+    $('#changePwBtn').disabled = true;
+    $('#pwStatus').textContent = '更新中…';
+    try {
+      await api('adminChangePassword', { pw: PW, newPw: np });
+      PW = np;
+      $('#newPw').value = '';
+      $('#newPw2').value = '';
+      $('#pwStatus').textContent = '✅ 密碼已更新';
+      toast('✔ 管理密碼已更新');
+    } catch (err) { $('#pwStatus').textContent = '❌ 更新失敗'; toast('更新失敗：' + (err.message || err)); }
+    $('#changePwBtn').disabled = false;
   });
 
   // 登入成功後也載入圖片、音樂、活動資訊

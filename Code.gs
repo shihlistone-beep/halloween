@@ -129,6 +129,9 @@ function doPost(e) {
       case 'adminSetEventInfo':
         result = adminSetEventInfo(input.pw, input.data);
         break;
+      case 'adminChangePassword':
+        result = adminChangePassword(input.pw, input.newPw);
+        break;
       default:
         result = { error: '未知的 action：' + (input.action || '') };
     }
@@ -593,11 +596,20 @@ function adminSetEventInfo(pw, data) {
     checkinTime: String(data.checkinTime || '').trim(),
     departTime: String(data.departTime || '').trim(),
     audience: String(data.audience || '').trim(),
-    rules: Array.isArray(data.rules) ? data.rules.map(function(r){ return String(r).trim(); }).filter(function(r){ return r; }) : []
+    rules: Array.isArray(data.rules) ? data.rules.map(function(r){ return String(r).trim(); }).filter(function(r){ return r; }) : [],
+    giftDesc: String(data.giftDesc || '').trim()
   };
   var props = PropertiesService.getScriptProperties();
   props.setProperty('EVENT_INFO', JSON.stringify(info));
   return { ok: true, data: info };
+}
+
+function adminChangePassword(pw, newPw) {
+  checkAdmin_(pw);
+  var np = String(newPw || '').trim();
+  if (np.length < 4) throw new Error('新密碼至少需要 4 個字元');
+  PropertiesService.getScriptProperties().setProperty('ADMIN_PASSWORD', np);
+  return { ok: true };
 }
 
 // ===================== 工具 =====================
