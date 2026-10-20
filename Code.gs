@@ -55,7 +55,7 @@ const OPT = {
   source: ['什浬鍋 Facebook', '什浬鍋 Instagram', 'LINE 分享', '親友分享', '在地合作商家', '其他'],
   childAges: ['未滿3歲', '3－5歲', '6－8歲', '9－12歲', '13歲以上'],
   hasInfant: ['沒有', '有'],
-  needStroller: ['不需要', '需要'],
+  needStroller: ['不會', '會'],
   kidCostume: ['會，已經準備好了！', '還在準備中', '不會，輕鬆參加就好'],
   petTypes: ['狗狗', '貓咪', '其他寵物'],
   petNum: ['1隻', '2隻', '3隻', '4隻以上'],

@@ -246,7 +246,7 @@ button,input{font:inherit}
   // ====================================================
   // ★★★ 部署後請把下面的網址換成你的 Apps Script 部署網址 ★★★
   // ====================================================
-  const API_URL = 'https://script.google.com/macros/s/AKfycbw_Zrq9MaIF9KaIF4SUW3h8d566epc7WOzdJiNFSQ4Ww4YNqaq_RKDdE6EFKpuPAyEr/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbz5_YcrzWTppAdevO9dVXE4-RTZeRLD2RkTCZw-LAfrxkFEcKb-KkhIACnR_v4R9PU/exec';
   // ====================================================
 
   const IS_PREVIEW = !API_URL;
@@ -338,7 +338,7 @@ button,input{font:inherit}
       s.people += num(r.totalPeople); s.pets += num(r.petCount);
       s.adults += num(r.adults); s.kids += num(r.children);
       if (isIn(r)) { s.inG++; s.inP += num(r.totalPeople); s.inAdults += num(r.adults); s.inKids += num(r.children); }
-      if (r.needStroller === '需要') s.stroller++;
+      if (r.needStroller === '會' || r.needStroller === '需要') s.stroller++;
       if (r.hasInfant === '有') s.infant++;
       if (/推車/.test(r.petMode)) s.petStroller++;
       if (r.photoConsent === '不同意') s.noPhoto++;
@@ -401,7 +401,7 @@ button,input{font:inherit}
       badges.push('<span class="b">👥 ' + esc(r.totalPeople) + '人</span>');
       if (hasKids(r)) badges.push('<span class="b">👧 兒童' + esc(r.children) + '</span>');
       if (hasPets(r)) badges.push('<span class="b">🐾 ' + esc(r.petCount) + '隻' + (r.petNames ? '・' + esc(r.petNames) : '') + '</span>');
-      if (r.needStroller === '需要') badges.push('<span class="b">🍼 推車</span>');
+      if (r.needStroller === '會' || r.needStroller === '需要') badges.push('<span class="b">🍼 推車</span>');
       if (r.photoConsent === '不同意') badges.push('<span class="b warn">🚫 不拍照</span>');
       if (r.note || r.petNote) badges.push('<span class="b note">📝 備註</span>');
       const det = FIELDS.filter(([k]) => r[k] && !['id','name'].includes(k))
