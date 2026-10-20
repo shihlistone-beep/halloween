@@ -370,11 +370,11 @@ footer{text-align:center;color:#8a7aa3;font-size:12.5px;margin-top:32px}
 
   <section class="card" id="eventInfoCard">
     <dl class="info" id="eventInfoDl">
-      <dt>📅 日期</dt><dd id="evDate">載入中…</dd>
-      <dt>📍 集合</dt><dd id="evLocation">載入中…</dd>
-      <dt>⏰ 報到</dt><dd id="evCheckinTime">載入中…</dd>
-      <dt>🚶 出發</dt><dd id="evDepartTime">載入中…</dd>
-      <dt>👨‍👩‍👧 對象</dt><dd id="evAudience">載入中…</dd>
+      <dt>📅 日期</dt><dd id="evDate">115年10月30日（星期五）</dd>
+      <dt>📍 集合</dt><dd id="evLocation">什浬鍋停車場<br><small>雲林縣麥寮鄉中山路409號</small></dd>
+      <dt>⏰ 報到</dt><dd id="evCheckinTime">17:40－18:00</dd>
+      <dt>🚶 出發</dt><dd id="evDepartTime">18:10 準時出發</dd>
+      <dt>👨‍👩‍👧 對象</dt><dd id="evAudience">親子家庭、寵物家庭及一般民眾</dd>
     </dl>
   </section>
 
@@ -559,7 +559,7 @@ footer{text-align:center;color:#8a7aa3;font-size:12.5px;margin-top:32px}
       <div class="card">
         <div class="field" data-req="checkall" data-name="timeAgree">
           <span class="label">活動時間確認<span class="req">必填・請全部勾選</span></span>
-          <div class="choices" data-type="checkbox" data-name="timeAgree"
+          <div class="choices" data-type="checkbox" data-name="timeAgree" id="timeAgreeChoices"
             data-options='["我已了解活動集合報到時間為17:40－18:00，預計18:10出發。","若我可能晚到，會先至什浬鍋店內櫃檯報到，確認後續參加方式，不自行追趕遊街隊伍。"]'></div>
           <div class="err">請勾選全部項目</div>
         </div>
@@ -658,6 +658,27 @@ footer{text-align:center;color:#8a7aa3;font-size:12.5px;margin-top:32px}
     dd('evAudience', res.audience);
     // 填入禮物說明
     if (res.giftDesc != null) { var gd = document.getElementById('giftDesc'); if (gd) gd.textContent = res.giftDesc; }
+    // 動態更新「活動時間確認」勾選文字
+    if (res.checkinTime || res.departTime) {
+      var ct = res.checkinTime || '17:40－18:00';
+      var dt = res.departTime || '18:10 準時出發';
+      var dep = dt.replace(/\s*準時出發/, '');
+      var tac = document.getElementById('timeAgreeChoices');
+      if (tac) {
+        var newOpts = ['我已了解活動集合報到時間為' + ct + '，預計' + dep + '出發。', '若我可能晚到，會先至什浬鍋店內櫃檯報到，確認後續參加方式，不自行追趕遊街隊伍。'];
+        tac.setAttribute('data-options', JSON.stringify(newOpts));
+        tac.innerHTML = '';
+        newOpts.forEach(function(opt, i) {
+          var id = 'timeAgree_' + i;
+          var lab = document.createElement('label');
+          lab.className = 'choice'; lab.htmlFor = id;
+          lab.innerHTML = '<input type="checkbox" id="' + id + '" name="timeAgree"><span class="box"></span><span class="txt"></span>';
+          lab.querySelector('input').value = opt;
+          lab.querySelector('.txt').textContent = opt;
+          tac.appendChild(lab);
+        });
+      }
+    }
     // 填入須知
     var ol = document.getElementById('eventRules');
     if (ol && res.rules && res.rules.length) {
