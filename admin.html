@@ -447,7 +447,8 @@ button,input{font:inherit}
       return '<div class="item' + (isIn(r) ? ' in' : '') + (openSet.has(r.id) ? ' open' : '') + '" data-id="' + esc(r.id) + '">' +
         '<div class="row"><input type="checkbox" class="sel-cb" data-sel="' + esc(r.id) + '"' + (selectedSet.has(r.id) ? ' checked' : '') + ' style="width:18px;height:18px;accent-color:var(--orange);flex:none;cursor:pointer"><div class="id">' + esc(r.id) + '</div>' +
         '<div class="main"><div class="n">' + esc(r.name) + '</div><div class="p">' + esc(r.phone) + (isIn(r) ? '・' + esc(r.checkinTime) + ' 報到' : '') + (hasGift(r) ? '・🎁 ' + esc(r.giftClaimTime) + ' 領禮物' : '') + '</div><div class="badges">' + badges.join('') + '</div></div>' +
-        '<button class="ck' + (isIn(r) ? ' on' : '') + '" data-ck>' + (isIn(r) ? '✔ 已報到' : '報到') + '</button></div>' +
+        '<button class="ck' + (isIn(r) ? ' on' : '') + '" data-ck>' + (isIn(r) ? '✔ 已報到' : '報到') + '</button>' +
+        '<div style="flex:none;min-width:84px;height:44px;border-radius:12px;border:2px solid ' + (hasGift(r) ? '#e040fb' : 'var(--line)') + ';background:' + (hasGift(r) ? '#e040fb' : 'var(--bg2)') + ';color:' + (hasGift(r) ? '#fff' : 'var(--muted)') + ';font-weight:900;display:grid;place-items:center;font-size:14px">' + (hasGift(r) ? '🎁 已領取' : '🎁 未領') + '</div></div>' +
         '<div class="detail"><dl>' + det + '</dl><div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end"><button class="btn" style="font-size:13px;padding:6px 14px" data-edit="' + esc(r.id) + '">✏️ 編輯</button><button class="btn" style="color:var(--red);border-color:var(--red);font-size:13px;padding:6px 14px" data-delete="' + esc(r.id) + '">🗑️ 刪除此報名</button></div><div class="edit-form" id="editForm_' + esc(r.id) + '" hidden></div></div></div>';
     }).join('');
 
