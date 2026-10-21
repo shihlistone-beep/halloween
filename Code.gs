@@ -47,6 +47,8 @@ const FIELDS = [
   ['photoConsent', '影像使用'],
   ['checkedIn', '已報到'],
   ['checkinTime', '報到時間'],
+  ['giftClaimed', '已領禮物'],
+  ['giftClaimTime', '領禮物時間'],
 ];
 
 const OPT = {
@@ -97,6 +99,9 @@ function doPost(e) {
         break;
       case 'lookupRegistration':
         result = lookupRegistration(input.pw, input.id);
+        break;
+      case 'claimGift':
+        result = claimGift(input.pw, input.id);
         break;
       case 'getImages':
         result = getImages();
@@ -229,6 +234,8 @@ function submitRegistration(input) {
     data.createdAt = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, 'yyyy-MM-dd HH:mm:ss');
     data.checkedIn = '';
     data.checkinTime = '';
+    data.giftClaimed = '';
+    data.giftClaimTime = '';
 
     const row = FIELDS.map(f => safeCell_(data[f[0]]));
     sh.getRange(last + 1, 1, 1, row.length).setNumberFormat('@').setValues([row]);
@@ -483,6 +490,60 @@ function lookupRegistration(pw, id) {
 function checkinById(pw, id) {
   checkAdmin_(pw);
   return adminSetCheckin(pw, id, true);
+}
+
+/** 領禮物（活動結束後掃碼用）：需先報到才能領 */
+function claimGift(pw, id) {
+  checkAdmin_(pw);
+  var query = String(id || '').trim();
+  if (!query) throw new Error('請輸入編號或電話號碼');
+  var lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    var sh = ensureSheet_();
+    var last = sh.getLastRow();
+    if (last < 2) throw new Error('找不到報名資料');
+    var cols = sh.getLastColumn();
+    var data = sh.getRange(2, 1, last - 1, cols).getDisplayValues();
+    var idCol = fieldIndex_('id');
+    var phoneCol = fieldIndex_('phone');
+    var checkedInCol = fieldIndex_('checkedIn');
+    var giftCol = fieldIndex_('giftClaimed');
+    var row = -1;
+    // 先用編號找
+    for (var i = 0; i < data.length; i++) {
+      if (data[i][idCol] === query) { row = i; break; }
+    }
+    // 找不到就用電話找
+    if (row === -1) {
+      var normQuery = normPhone_(query);
+      for (var i = 0; i < data.length; i++) {
+        if (normPhone_(data[i][phoneCol]) === normQuery) { row = i; break; }
+      }
+    }
+    if (row === -1) throw new Error('找不到編號或電話 ' + query);
+    // 組成報名物件
+    var vals = data[row];
+    var reg = {};
+    FIELDS.forEach(function(f, i) { reg[f[0]] = vals[i] || ''; });
+    // 檢查是否已報到
+    if (reg.checkedIn !== '✔') {
+      return { error: 'notCheckedIn', registration: reg };
+    }
+    // 檢查是否已領過禮物
+    if (reg.giftClaimed === '✔') {
+      return { alreadyClaimed: true, registration: reg };
+    }
+    // 標記領禮物
+    var sheetRow = row + 2;
+    var time = Utilities.formatDate(new Date(), CONFIG.TIMEZONE, 'HH:mm:ss');
+    sh.getRange(sheetRow, giftCol + 1, 1, 2).setValues([['✔', time]]);
+    reg.giftClaimed = '✔';
+    reg.giftClaimTime = time;
+    return { ok: true, registration: reg };
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 // ===================== 報名確認信 =====================

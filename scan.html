@@ -7,11 +7,20 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0d0d1a;--card:#1a1a2e;--primary:#ff6600;--ok:#00c853;--fail:#ff3d3d;--text:#f5f0ff;--muted:#aaa}
+:root{--bg:#0d0d1a;--card:#1a1a2e;--primary:#ff6600;--ok:#00c853;--fail:#ff3d3d;--text:#f5f0ff;--muted:#aaa;--gift:#e040fb}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;display:flex;flex-direction:column;align-items:center}
 .top{width:100%;padding:16px;text-align:center;background:var(--card);border-bottom:2px solid #2a2a4a}
 .top h1{font-size:20px;margin:0 0 4px}
 .top p{color:var(--muted);font-size:13px;margin:0}
+
+/* 模式切換 */
+.mode-tabs{display:flex;gap:0;margin:16px 16px 0;max-width:500px;width:calc(100% - 32px)}
+.mode-tab{flex:1;padding:12px 8px;border:2px solid #333;background:var(--card);color:var(--muted);font-size:15px;font-weight:700;cursor:pointer;text-align:center;transition:all .2s}
+.mode-tab:first-child{border-radius:10px 0 0 10px}
+.mode-tab:last-child{border-radius:0 10px 10px 0}
+.mode-tab.active[data-mode="checkin"]{background:var(--primary);color:#fff;border-color:var(--primary)}
+.mode-tab.active[data-mode="gift"]{background:var(--gift);color:#fff;border-color:var(--gift)}
+.mode-label{font-size:12px;font-weight:400;display:block;margin-top:2px;opacity:.8}
 
 /* 登入 */
 .login{max-width:400px;width:100%;padding:24px 16px;text-align:center}
@@ -28,7 +37,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .manual{margin:16px 0;display:flex;gap:8px}
 .manual input{flex:1;padding:12px;border:2px solid #333;border-radius:10px;background:#111;color:#fff;font-size:16px}
 .manual input:focus{outline:none;border-color:var(--primary)}
-.manual button{padding:12px 20px;border:none;border-radius:10px;background:var(--primary);color:#fff;font-weight:700;font-size:15px;cursor:pointer}
+.manual button{padding:12px 20px;border:none;border-radius:10px;color:#fff;font-weight:700;font-size:15px;cursor:pointer}
+.manual button.checkin-mode{background:var(--primary)}
+.manual button.gift-mode{background:var(--gift)}
 .hint{color:var(--muted);font-size:13px;text-align:center;margin:8px 0}
 
 /* 結果 */
@@ -37,6 +48,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .result-card.ok{border-color:var(--ok)}
 .result-card.fail{border-color:var(--fail)}
 .result-card.dup{border-color:#ffc107}
+.result-card.gift-ok{border-color:var(--gift)}
+.result-card.gift-dup{border-color:#ffc107}
 .result-card .icon{font-size:56px;margin:0 0 12px}
 .result-card h2{font-size:22px;margin:0 0 8px}
 .result-card .id{font-size:28px;font-weight:800;color:var(--primary);margin:8px 0}
@@ -49,8 +62,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 /* 統計 */
 .stats{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap;justify-content:center}
-.stat{background:var(--card);border-radius:10px;padding:10px 16px;text-align:center;min-width:80px}
+.stat{background:var(--card);border-radius:10px;padding:10px 16px;text-align:center;min-width:70px}
 .stat .n{font-size:22px;font-weight:800;color:var(--primary)}
+.stat.gift-stat .n{color:var(--gift)}
 .stat .l{font-size:11px;color:var(--muted)}
 
 [hidden]{display:none!important}
@@ -59,7 +73,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <body>
 
 <div class="top">
-  <h1>🎃 掃碼報到</h1>
+  <h1 id="topTitle">🎃 掃碼報到</h1>
   <p>什浬鍋萬聖節親子遊街活動</p>
 </div>
 
@@ -68,17 +82,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <p style="font-size:48px;margin:24px 0">👻</p>
   <p>工作人員請輸入管理密碼</p>
   <input type="password" id="scanPw" placeholder="管理密碼" autofocus>
-  <button class="btn primary" id="loginBtn">進入掃碼報到</button>
+  <button class="btn primary" id="loginBtn">進入掃碼系統</button>
   <p id="loginErr" style="color:var(--fail);margin:8px 0;font-size:14px" hidden></p>
 </div>
 
 <!-- 掃描區 -->
 <div class="scanner-wrap" id="scanView" hidden>
+  <!-- 模式切換 -->
+  <div class="mode-tabs">
+    <div class="mode-tab active" data-mode="checkin" id="tabCheckin">📋 報到模式<span class="mode-label">活動開始前</span></div>
+    <div class="mode-tab" data-mode="gift" id="tabGift">🎁 領禮物模式<span class="mode-label">活動結束後</span></div>
+  </div>
   <div class="stats" id="statsBar"></div>
   <div id="reader"></div>
   <div class="manual">
     <input type="text" id="manualId" placeholder="輸入編號（如 H001）或電話號碼">
-    <button id="manualBtn">報到</button>
+    <button id="manualBtn" class="checkin-mode">報到</button>
   </div>
   <p class="hint">📷 將 QR Code 對準鏡頭，或手動輸入報名編號 / 電話號碼</p>
 </div>
@@ -89,14 +108,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <script>
 (function(){
   // ====================================================
-  const API_URL = 'https://script.google.com/macros/s/AKfycbwSEoFEaUvpRsv5DYMZLeiv2rXx1q3P819FtN3-CI8ETnxxbZL_Bv_Ac6O1VWvOKQo4/exec';
+  const API_URL = 'https://script.google.com/macros/s/AKfycbx_9nL1IEkqEiMOBVW3en2zfj2-8Z5cQ-buXzBtmXpxZ7nZujYMoyAix7j9I7aLFMkb/exec';
   // ====================================================
   const IS_PREVIEW = !API_URL;
   const $ = s => document.querySelector(s);
   let PW = '';
   let scanner = null;
   let scanning = false;
-  let stats = { total: 0, checkedIn: 0 };
+  let currentMode = 'checkin'; // 'checkin' 或 'gift'
+  let stats = { total: 0, checkedIn: 0, giftClaimed: 0 };
 
   async function api(action, payload) {
     if (IS_PREVIEW) {
@@ -104,6 +124,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       if (action === 'adminGetData') return mockData();
       if (action === 'checkinById') return mockCheckin(payload.id);
       if (action === 'lookupRegistration') return mockLookup(payload.id);
+      if (action === 'claimGift') return mockClaimGift(payload.id);
       return {};
     }
     const res = await fetch(API_URL, {
@@ -113,8 +134,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       redirect: 'follow',
     });
     const data = await res.json();
-    if (data.error) throw new Error(data.error);
+    if (data.error && data.error !== 'notCheckedIn') throw new Error(data.error);
     return data;
+  }
+
+  // --- 模式切換 ---
+  $('#tabCheckin').onclick = function() { switchMode('checkin'); };
+  $('#tabGift').onclick = function() { switchMode('gift'); };
+
+  function switchMode(mode) {
+    currentMode = mode;
+    $('#tabCheckin').classList.toggle('active', mode === 'checkin');
+    $('#tabGift').classList.toggle('active', mode === 'gift');
+    $('#topTitle').textContent = mode === 'checkin' ? '🎃 掃碼報到' : '🎁 掃碼領禮物';
+    var btn = $('#manualBtn');
+    btn.textContent = mode === 'checkin' ? '報到' : '領禮物';
+    btn.className = mode === 'checkin' ? 'checkin-mode' : 'gift-mode';
+    renderStats();
   }
 
   // --- 登入 ---
@@ -128,6 +164,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       if (res.rows) {
         stats.total = res.rows.length;
         stats.checkedIn = res.rows.filter(r => r.checkedIn === '✔').length;
+        stats.giftClaimed = res.rows.filter(r => r.giftClaimed === '✔').length;
       }
       renderStats();
       $('#loginView').hidden = true;
@@ -138,16 +175,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       $('#loginErr').hidden = false;
     }
     $('#loginBtn').disabled = false;
-    $('#loginBtn').textContent = '進入掃碼報到';
+    $('#loginBtn').textContent = '進入掃碼系統';
   };
   $('#scanPw').addEventListener('keydown', e => { if (e.key === 'Enter') $('#loginBtn').click(); });
 
   // --- 統計 ---
   function renderStats() {
-    $('#statsBar').innerHTML =
-      '<div class="stat"><div class="n">' + stats.total + '</div><div class="l">總報名</div></div>' +
-      '<div class="stat"><div class="n">' + stats.checkedIn + '</div><div class="l">已報到</div></div>' +
-      '<div class="stat"><div class="n">' + (stats.total - stats.checkedIn) + '</div><div class="l">未報到</div></div>';
+    if (currentMode === 'checkin') {
+      $('#statsBar').innerHTML =
+        '<div class="stat"><div class="n">' + stats.total + '</div><div class="l">總報名</div></div>' +
+        '<div class="stat"><div class="n">' + stats.checkedIn + '</div><div class="l">已報到</div></div>' +
+        '<div class="stat"><div class="n">' + (stats.total - stats.checkedIn) + '</div><div class="l">未報到</div></div>';
+    } else {
+      $('#statsBar').innerHTML =
+        '<div class="stat"><div class="n">' + stats.checkedIn + '</div><div class="l">已報到</div></div>' +
+        '<div class="stat gift-stat"><div class="n">' + stats.giftClaimed + '</div><div class="l">已領禮物</div></div>' +
+        '<div class="stat"><div class="n">' + (stats.checkedIn - stats.giftClaimed) + '</div><div class="l">未領禮物</div></div>';
+    }
   }
 
   // --- 掃描器 ---
@@ -178,13 +222,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   function onScan(text) {
     if (text === lastScan) return;
     lastScan = text;
-    // 從 URL 或純文字中解析編號
     let id = text;
     const match = text.match(/[?&]id=([^&]+)/);
     if (match) id = decodeURIComponent(match[1]);
-    // 也接受純編號如 H001
     if (/^H\d{3,}$/i.test(id.trim())) {
-      doCheckin(id.trim().toUpperCase());
+      doAction(id.trim().toUpperCase());
     }
   }
 
@@ -192,10 +234,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   $('#manualBtn').onclick = () => {
     const id = $('#manualId').value.trim().toUpperCase();
     if (!id) return;
-    doCheckin(id);
+    doAction(id);
     $('#manualId').value = '';
   };
   $('#manualId').addEventListener('keydown', e => { if (e.key === 'Enter') $('#manualBtn').click(); });
+
+  // --- 統一入口：根據模式執行報到或領禮物 ---
+  function doAction(id) {
+    if (currentMode === 'checkin') {
+      doCheckin(id);
+    } else {
+      doClaimGift(id);
+    }
+  }
 
   // --- 報到 ---
   async function doCheckin(id) {
@@ -205,7 +256,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     $('#resultView').innerHTML = '<div class="result-card"><div class="icon">⏳</div><h2>查詢中…</h2><div class="id">' + esc(id) + '</div></div>';
 
     try {
-      // 先查詢報名資料（支援編號或電話）
       const lookup = await api('lookupRegistration', { pw: PW, id: id });
       const reg = lookup.registration;
       const regId = reg.id || id;
@@ -215,12 +265,39 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         return;
       }
 
-      // 用查到的編號執行報到
       await api('checkinById', { pw: PW, id: regId });
       stats.checkedIn++;
-      showResult('ok', '✅', '報到成功！', regId, reg, '');
+      showResult('ok', '✅', '報到成功！', regId, reg, '🎃 請參加活動，結束後再掃碼領取禮物');
     } catch (e) {
       showResult('fail', '❌', '報到失敗', id, null, e.message || '找不到此編號或電話');
+    }
+  }
+
+  // --- 領禮物 ---
+  async function doClaimGift(id) {
+    stopScanner();
+    $('#scanView').hidden = true;
+    $('#resultView').hidden = false;
+    $('#resultView').innerHTML = '<div class="result-card"><div class="icon">⏳</div><h2>查詢中…</h2><div class="id">' + esc(id) + '</div></div>';
+
+    try {
+      const result = await api('claimGift', { pw: PW, id: id });
+
+      if (result.error === 'notCheckedIn') {
+        showResult('fail', '⛔', '尚未報到', result.registration.id || id, result.registration, '此人尚未報到，無法領取禮物');
+        return;
+      }
+      if (result.alreadyClaimed) {
+        showResult('gift-dup', '⚠️', '已領過禮物', result.registration.id || id, result.registration, '已於 ' + (result.registration.giftClaimTime || '稍早') + ' 領取');
+        return;
+      }
+      if (result.ok) {
+        stats.giftClaimed++;
+        showResult('gift-ok', '🎁', '領取禮物成功！', result.registration.id || id, result.registration, '✅ 請發放禮物給此參加者');
+        return;
+      }
+    } catch (e) {
+      showResult('fail', '❌', '領禮物失敗', id, null, e.message || '找不到此編號或電話');
     }
   }
 
@@ -235,6 +312,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         + '<dt>電話</dt><dd>' + esc(reg.phone) + '</dd>'
         + '<dt>人數</dt><dd>' + esc(reg.totalPeople) + ' 人' + (Number(reg.petCount) > 0 ? '＋' + reg.petCount + ' 隻毛孩' : '') + '</dd>'
         + '<dt>類型</dt><dd>' + esc(reg.memberType) + '</dd>'
+        + '<dt>報到</dt><dd>' + (reg.checkedIn === '✔' ? '✔ ' + (reg.checkinTime || '') : '尚未報到') + '</dd>'
+        + (currentMode === 'gift' ? '<dt>禮物</dt><dd>' + (reg.giftClaimed === '✔' ? '✔ 已領取 ' + (reg.giftClaimTime || '') : '尚未領取') + '</dd>' : '')
         + (reg.note ? '<dt>備註</dt><dd>' + esc(reg.note) + '</dd>' : '')
         + '</dl>';
     }
@@ -258,22 +337,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   // --- 預覽模式假資料 ---
   function mockData() {
     return { rows: [
-      { id:'H001', name:'王小明', checkedIn:'', checkinTime:'' },
-      { id:'H002', name:'陳美玲', checkedIn:'✔', checkinTime:'17:45:00' },
-      { id:'H003', name:'林大華', checkedIn:'', checkinTime:'' },
+      { id:'H001', name:'王小明', checkedIn:'', checkinTime:'', giftClaimed:'', giftClaimTime:'' },
+      { id:'H002', name:'陳美玲', checkedIn:'✔', checkinTime:'17:45:00', giftClaimed:'', giftClaimTime:'' },
+      { id:'H003', name:'林大華', checkedIn:'', checkinTime:'', giftClaimed:'', giftClaimTime:'' },
     ], fields: [], serverTime: '' };
   }
   function mockLookup(id) {
     const db = {
-      H001: { id:'H001', name:'王小明', phone:'0912-345-678', totalPeople:'3', petCount:'1', memberType:'親子與寵物一起參加', checkedIn:'', checkinTime:'', note:'' },
-      H002: { id:'H002', name:'陳美玲', phone:'0988-111-222', totalPeople:'4', petCount:'0', memberType:'親子家庭（有小朋友）', checkedIn:'✔', checkinTime:'17:45:00', note:'有一位小朋友需要輪椅通道' },
-      H003: { id:'H003', name:'林大華', phone:'0933-456-789', totalPeople:'1', petCount:'2', memberType:'寵物家庭（有攜帶毛孩）', checkedIn:'', checkinTime:'', note:'' },
+      H001: { id:'H001', name:'王小明', phone:'0912-345-678', totalPeople:'3', petCount:'1', memberType:'親子與寵物一起參加', checkedIn:'', checkinTime:'', giftClaimed:'', giftClaimTime:'', note:'' },
+      H002: { id:'H002', name:'陳美玲', phone:'0988-111-222', totalPeople:'4', petCount:'0', memberType:'親子家庭（有小朋友）', checkedIn:'✔', checkinTime:'17:45:00', giftClaimed:'', giftClaimTime:'', note:'有一位小朋友需要輪椅通道' },
+      H003: { id:'H003', name:'林大華', phone:'0933-456-789', totalPeople:'1', petCount:'2', memberType:'寵物家庭（有攜帶毛孩）', checkedIn:'', checkinTime:'', giftClaimed:'', giftClaimTime:'', note:'' },
     };
     if (db[id]) return { registration: db[id] };
     throw new Error('找不到報名編號 ' + id);
   }
   function mockCheckin(id) {
     return { id: id, checkedIn:'✔', checkinTime: new Date().toTimeString().slice(0,8) };
+  }
+  function mockClaimGift(id) {
+    return { ok: true, registration: { id: id, name:'測試', giftClaimed:'✔', giftClaimTime: new Date().toTimeString().slice(0,8), checkedIn:'✔' } };
   }
 })();
 </script>
